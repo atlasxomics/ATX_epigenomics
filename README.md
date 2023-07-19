@@ -17,71 +17,16 @@ This repository contains the  scripts necessary to analyze data from ATAC DBIT-s
 </div> 
 
 # Workflow
-Workflows developed with the SDK feature:
 
-  * Instant no-code interfaces for accessibility and publication
-  * First class static typing
-  * Containerization + versioning of every registered change
-  * Reliable + scalable managed cloud infrastructure
-  * Single line definition of arbitrary resource requirements (eg. CPU, GPU) for serverless execution
+**preprocessing** contains a scATAC-seq analysis pipeline built using [snakemake](https://bitbucket.org/snakemake/snakemake/wiki/Home); raw fastq files are uploaded directly to this directory for processing.  The pipeline performes the following steps,
 
-The Latch SDK is a framework to build workflows. A collection of existing and
-maintained workflows for common biological assays can be found at [Latch
-Verified](https://github.com/latch-verified).
+- reads are filtered on the correctness of ligation linker sequences
+- read2 is split into two read files ('new' read2, read3)
+- Cell Ranger ATAC is run on the processed reads.
 
-### preprocessing
+Cell Ranger ATAC outputs fragment files that are used for downstream analysis.  Due to the [system requirements](https://support.10xgenomics.com/single-cell-atac/software/overview/system-requirements) of Cell Ranger ATAC, the pipeline must be run in a Linux enviroment with at least 64GB RAM, an 8-core Intel or AMD processor, and 1TB of free disk space.
 
-1. Raw Fastq data
-
-    * Read 1: contains the spatial Barcode A and Barcode B
-
-    * Read 2: contains the genome sequences
-
-2. Reformat raw Fastq file to Cell Ranger ATAC format (10x Genomics)
-
-    Reformatting raw data was implemented by BC_process.py in the Data_preprocessing folder.
-   
-    * Raw read 1 -> New Read 1 + New Read 2**
-
-    * New Read 1: contains the genome sequences
-
-    * New Read 2: contains the spatial Barcode A and Barcode B
-
-    * **Raw read 2 -> New Read 3**
-
-5. Sequence alignment and generation of fragments file
-
-    The reformated data was processed using Cell Ranger ATAC v1.2 with following references:
-    
-    Mouse reference (mm10):
-    ```
-    curl -O https://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-mm10-1.2.0.tar.gz
-    ```
-    
-    Human reference (GRCh38):
-    ```
-    curl -O https://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-GRCh38-1.2.0.tar.gz
-    ```
-    
-    **A preprocessing pipeline we developed using Snakemake workflow management system is in the Data_preprocessing folder. To run the pipeline, use the command:**
-    ```
-    sbatch Snakemake.sh
-    ```
-
-### analysis
-  The data visualization were implemented with ArchR v1.0.1 and Seurat v3.2 package (Data_visualization folder).
-  
-  Brief descriptions of analysis scripts:
-  
-  **metadata_files_for_Seurat_spatial.ipynb**: Generate metadata files that were compatible with Seurat workflow for spatial datasets.
-  
-  **archR.R**: Data normalization and dimensionality reduction, identifying the marker genes, peak calling, deviatons enrichment anaylsis, bulk sample projection, and pseudotime analysis.
-  
-  **spatial_data_visualization.R**: Visualize spatially resolved data on tissue sections.
-  
-  **GO_enrichment_analysis.R**: GO enrichment analysis for marker genes.
-  
-  **integrative_data_analysis.R**: Integrative data analysis with scRNA-seq reference datasets.
+**preprocessing** contains R scripts and vignettes for further analysis of ATAC DBIT-seq experiments.  This scripts rely on the [ArchR](https://www.nature.com/articles/s41588-021-00790-6) and Seurat packages.
 
 # Citations
 
@@ -92,6 +37,10 @@ Liu, Y., DiStasio, M., Su, G. et al. High-plex protein and whole transcriptome c
 Yanxiang Deng et al. ,Spatial-CUT&Tag: Spatially resolved chromatin modification profiling at the cellular level.Science375,681-686(2022). DOI:10.1126/science.abg7216
 
 Liu et al. High-Spatial-Resolution Multi-Omics Sequencing via Deterministic Barcoding in Tissue Cell. 183, 1665–1681 (2020). https://doi.org/10.1016/j.cell.2020.10.026
+
+Granja, J.M., Corces, M.R., Pierce, S.E. et al. ArchR is a scalable software package for integrative single-cell chromatin accessibility analysis. Nat Genet 53, 403–411 (2021). https://doi.org/10.1038/s41588-021-00790-6
+
+
 
 
 
