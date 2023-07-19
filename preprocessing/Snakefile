@@ -1,0 +1,138 @@
+# modified for v2 Dec 2022
+
+import fnmatch
+import os
+
+########################################################
+# Modify global varibales here
+########################################################
+
+rawData_dir = 'raw_data' # raw sequencing data directory
+processedData_dir = 'processed_data' # processed sequencing data directory
+fastq_ext = '.fastq.gz' # fastq file extension
+
+core = 32 # threads to use
+core_cellRanger = int(core*0.8) # threads to use in cellRanger
+mem = 64 # memory to use in cellRanger
+
+bbduk_dir = 'bbmap/bbduk.sh'
+cellranger_dir = 'cellranger-atac-2.1.0/cellranger-atac'
+ref_dir = 'refdata-cellranger-arc-GRCh38-2020-A-2.0.0'
+
+########################################################
+########################################################
+
+samples = os.listdir(rawData_dir)
+output = [f'{processedData_dir}/{sample}/outs/complete.txt' for sample in samples]
+
+list_fastq={}
+for sample in samples:
+
+    # Make dict of fastq file names {sample : (r1, r2)}
+    list_fastq[sample] = (fnmatch.filter(os.listdir(f'{rawData_dir}/{sample}'),
+                                        f'*1{fastq_ext}')[0], # name of R1
+                        fnmatch.filter(os.listdir(f'{rawData_dir}/{sample}'),
+                                        f'*2{fastq_ext}')[0] # name of R2
+                        )
+
+    # Make working folders
+    working_dir = f'{processedData_dir}/{sample}'
+    qc_data = f'{working_dir}/qc_data'
+    cr_data = f'{working_dir}/cr_data' # Input fastqs for CellRanger
+
+
+    for dir in [working_dir, cr_data, qc_data]:
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+rule all:
+  input:
+    output
+
+rule filter_L1:
+  input:
+    in1 = lambda wildcards: rawData_dir + '/{sample}/' + list_fastq[wildcards.sample][0],
+    in2 = lambda wildcards: rawData_dir + '/{sample}/' + list_fastq[wildcards.sample][1]
+  output:
+    out1 = '{qc_data}/{sample}_linker1_R1.fastq.gz',
+    out2 = '{qc_data}/{sample}_linker1_R2.fastq.gz'
+  shell:
+    '''
+    {bbduk_dir} \
+    in1={input.in1} \
+    in2={input.in2} \
+    outm1={output.out1} \
+    outm2={output.out2} \
+    k=30 mm=f rcomp=f restrictleft=103 skipr1=t \
+    hdist=3 \
+    stats={qc_data}/{wildcards.sample}_stats.linker1.txt \
+    threads={core} \
+    literal=GTGGCCGATGTTTCGCATCGGCGTACGACT
+    '''
+
+rule filter_L2:
+  input:
+    in1 = f'{qc_data}' + '/{sample}_linker1_R1.fastq.gz',
+    in2 = f'{qc_data}' + '/{sample}_linker1_R2.fastq.gz'
+  output:
+    out1 = '{qc_data}/{sample}_qc_R1.fastq.gz',
+    out2 = '{qc_data}/{sample}_qc_R2.fastq.gz'
+  shell:
+    '''
+    {bbduk_dir} \
+    in1={input.in1} \
+    in2={input.in2} \
+    outm1={output.out1} \
+    outm2={output.out2} \
+    k=30 mm=f rcomp=f restrictleft=65 skipr1=t \
+    hdist=3 \
+    stats={qc_data}/{wildcards.sample}_stats.linker2.txt \
+    threads={core} \
+    literal=ATCCACGTGCTTGAGAGGCCAGAGCATTCG
+    '''
+
+rule bc_process:
+  input:
+    f'{qc_data}' + '/{sample}_qc_R2.fastq.gz'
+  output:
+    out1 = '{cr_data}/{sample}_S1_L001_R3_001.fastq',
+    out2 = '{cr_data}/{sample}_S1_L001_R2_001.fastq'
+
+  shell:
+    '''
+    python BC_process.py \
+    --input {input} \
+    --output_R3 {output.out1} \
+    --output_R2 {output.out2}
+    '''
+
+rule R1_rename: # Needed for snakemake wildcard consistency
+  input:
+    f'{qc_data}' + '/{sample}_qc_R1.fastq.gz'
+  output:
+    '{cr_data}/{sample}_S1_L001_R1_001.fastq.gz'
+  shell:
+    '''
+    cp {input} {output}
+    '''
+
+rule cell_ranger:
+  input:
+    in1 = f'{cr_data}' + '/{sample}_S1_L001_R1_001.fastq.gz',
+    in2 = f'{cr_data}' + '/{sample}_S1_L001_R2_001.fastq',
+    in3 = f'{cr_data}' + '/{sample}_S1_L001_R3_001.fastq'
+  output:
+    '{processedData_dir}/{sample}/outs/complete.txt'
+  shell:
+    '''
+    {cellranger_dir} count \
+    --id={wildcards.sample} \
+    --reference={ref_dir} \
+    --fastqs={cr_data} \
+    --sample={wildcards.sample} \
+    --localcores={core_cellRanger} \
+    --localmem={mem} \
+    --force-cells=2500
+    touch {output}
+    '''
+    
