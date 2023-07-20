@@ -1,7 +1,8 @@
 ## pipeline workflow
 
-![dag](../images/snakemake_dag.png)
-
+<div align="center">
+    <img src="../images/snakemake_dag.png" alt="dag" width="400"/>
+</div>
 
 > This pipeline was built for short-read NGS data generated via Illumina platforms; the pipeline may require modification for NGS data from other platforms.
 
