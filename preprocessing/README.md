@@ -1,10 +1,3 @@
-<div align="center">
-
-# preprocessing of spatial scATAC-seq data
-_A snakemake pipeline to process spatial ATAC-seq raw data_
-
-</div>
-
 ## pipeline workflow
 
 ![dag](../images/snakemake_dag.png)
