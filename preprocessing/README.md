@@ -1,58 +1,58 @@
-# Spatial ATAC-seq
-A snakemake pipeline to process spatial ATAC-seq raw data
+<div align="center">
 
-## Work flow of the pipeline
+# preprocessing of spatial scATAC-seq data
+_A snakemake pipeline to process spatial ATAC-seq raw data_
 
-![](./snakemake_dag.png)
+</div>
 
-## Dependiencies
+## pipeline workflow
+
+![dag](../images/snakemake_dag.png)
+
+
+> This pipeline was built for short-read NGS data generated via Illumina platforms; the pipeline may require modification for NGS data from other platforms.
+
+For this pipeline expects the following barcoding schema,
+- read 1: genomic sequence
+- read 2: linker1 | barcodeA | linker2 | barcodeB | genomic sequence
+
+### steps
+
+1. filter reads on reads on read2 ligation linker sequences with [bbduk](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/)
+    1. reads with >3 mismatchs in the ligation linker1 removed from analysis
+    2. reads with >3 mismatchs in the ligation linker2 removed from analysis
+
+2. reformat read2 fastq to Cell Ranger ATAC format with BC_process.py
+    - read2 -> read3, new-read2
+        - read3: genome sequence
+        - new-read2: barcodeA + barcodeB
+
+3. sequence alignment and fragment file generation with Cell Ranger ATAC
+    
+    The following reference genomes were used,
+    
+    - Mouse reference (mm10)
+        ```
+        curl -O https://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-mm10-1.2.0.tar.gz
+        ```
+
+    - Human reference (GRCh38):
+        ```
+        curl -O https://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-GRCh38-1.2.0.tar.gz
+        ```
+## setting up the enviroment
+Due to the system requirements of Cell Ranger ATAC, the pipeline must be run in a Linux environment with at least 64GB RAM, an 8-core Intel or AMD processor, and 1TB of free disk space; we recommend running this pipeline in an AWS EC2 instance.
+
+An example of running the pipeline in an HPC can be found [here](https://github.com/di-0579/Spatial_epigenome-transcriptome_co-sequencing/tree/main/Data_preprocessing/Spatial-ATAC-seq).
+
+## running the pipeline
+1. Ensure cellranger-atac-cs/1.2.0/lib/python/barcodes/737K-cratac-v1.txt matches the barcode file in top directory.
+2. Configure Snakefile.
+3. Activate conda snakemake env and run `snakemake -j 32`
+
+## dependiencies
 
 * [Snakemake](https://snakemake.readthedocs.io/en/stable/index.html)
 * [Biopython](https://biopython.org/docs/1.75/api/index.html)
 * [Cell Ranger ATAC](https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/installation). v1.2
-* [BBMap](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/installation-guide/)
-
-Next Generation Sequencing (NGS) was performed using the Illumina NextSeq 2000 or NovaSeq 6000 (150:8:150). 
-
-### 1. Raw Fastq data
-
-Read 1: contains the genomic sequence
-
-Read 2: contains the spatial Barcode A and Barcode B and genomic sequence
-
-### 2. Reformat raw Fastq file to Cell Ranger ATAC format (10x Genomics)
-
-**Raw read 2 -> New Read 3 + New Read 2**
-
-- New Read 3: contains the genome sequences
-
-- New Read 2: contains the spatial Barcode A and Barcode B
-
-**Raw read 2 -> New Read 3**
-
-Reformatting raw data was implemented by BC_process.py in the Data_preprocessing folder.
-
-### 3. Sequence alignment and generation of fragments file
-
-The reformated data was processed using Cell Ranger ATAC v1.2 with following references:
-
-Mouse reference (mm10):
-```
-curl -O https://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-mm10-1.2.0.tar.gz
-```
-
-Human reference (GRCh38):
-```
-curl -O https://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-GRCh38-1.2.0.tar.gz
-```
-
-**A preprocessing pipeline we developed using Snakemake workflow management system is in the Data_preprocessing folder.**
-
-## Run the pipeline
-1. Ensure cellranger-atac-cs/1.2.0/lib/python/barcodes/737K-cratac-v1.txt matches the barcode file in top directory.
-2. Configure Snakefile
-3. To run the pipeline, activate conda snakemake env and run the command:
-```
-snakemake -j 32
-```
-
+* [BBMap](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/)
