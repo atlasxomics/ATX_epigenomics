@@ -1,10 +1,10 @@
 # references 
-./preprocessing/refdata-cellranger-arc-GRCh38-2020-A-2.0.0
-./preprocessing/refdata-cellranger-arc-mm10-2020-A-2.0.0
+preprocessing/refdata-cellranger-arc-GRCh38-2020-A-2.0.0
+preprocessing/refdata-cellranger-arc-mm10-2020-A-2.0.0
 
 # software packages
-./preprocessing/cellranger-atac-2.1.0
-./preprocessing/bbmap
+preprocessing/cellranger-atac-2.1.0
+preprocessing/bbmap
 
 # python stuff
 __pycache__/
