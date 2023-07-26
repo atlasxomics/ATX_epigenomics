@@ -1,4 +1,4 @@
-"""Snakemake pipe for converting raw fastq data to ATAC-seq fragments
+"""Snakemake pipeline for converting raw fastq data to ATAC-seq fragments
 """
 
 import fnmatch
