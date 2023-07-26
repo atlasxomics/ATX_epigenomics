@@ -4,7 +4,7 @@
 import fnmatch
 import os
 
-############################### GLOBALS (CHANGE ME)###########################
+############################### GLOBALS (CHANGE ME) ##########################
 
 # reference genome
 ref_dir = 'refdata-cellranger-arc-GRCh38-2020-A-2.0.0'
@@ -20,8 +20,8 @@ cores = 32 # threads to use
 cores_cellRanger = int(cores*0.8) # threads to use in Cell Ranger
 mem = 64 # memory to use in Cell Ranger
 
-bbduk_dir = 'bbmap/bbduk.sh'
-cellranger_dir = 'cellranger-atac-2.1.0/cellranger-atac'
+bbduk_path = 'bbmap/bbduk.sh'
+cellranger_path = 'cellranger-atac-2.1.0/cellranger-atac'
 
 ############################### WORKFLOW #####################################
 
@@ -71,7 +71,7 @@ rule filter_L1:
     out2 = '{qc_data}/{sample}_linker1_R2.fastq.gz'
   shell:
     '''
-    {bbduk_dir} \
+    {bbduk_path} \
     in1={input.in1} \
     in2={input.in2} \
     outm1={output.out1} \
@@ -92,7 +92,7 @@ rule filter_L2:
     out2 = '{qc_data}/{sample}_linker2_R2.fastq.gz'
   shell:
     '''
-    {bbduk_dir} \
+    {bbduk_path} \
     in1={input.in1} \
     in2={input.in2} \
     outm1={output.out1} \
@@ -138,7 +138,7 @@ rule cell_ranger:
     '{inputs_dir}/{sample}/outs/complete.txt'
   shell:
     '''
-    {cellranger_dir} count \
+    {cellranger_path} count \
     --id={wildcards.sample} \
     --reference={ref_dir} \
     --fastqs={cr_data} \
