@@ -67,8 +67,8 @@ rule filter_L1:
     )
 
   output:
-    out1 = '{qc_data}/{sample}_linker1_R1.fastq.gz',
-    out2 = '{qc_data}/{sample}_linker1_R2.fastq.gz'
+    out1 = f'{qc_data}/{sample}_linker1_R1.fastq.gz',
+    out2 = f'{qc_data}/{sample}_linker1_R2.fastq.gz'
   shell:
     '''
     {bbduk_path} \
@@ -85,11 +85,11 @@ rule filter_L1:
 
 rule filter_L2:
   input:
-    in1 = f'{qc_data}' + '/{sample}_linker1_R1.fastq.gz',
-    in2 = f'{qc_data}' + '/{sample}_linker1_R2.fastq.gz'
+    in1 = f'{qc_data}/{sample}_linker1_R1.fastq.gz',
+    in2 = f'{qc_data}/{sample}_linker1_R2.fastq.gz'
   output:
-    out1 = '{qc_data}/{sample}_linker2_R1.fastq.gz',
-    out2 = '{qc_data}/{sample}_linker2_R2.fastq.gz'
+    out1 = f'{qc_data}/{sample}_linker2_R1.fastq.gz',
+    out2 = f'{qc_data}/{sample}_linker2_R2.fastq.gz'
   shell:
     '''
     {bbduk_path} \
@@ -108,8 +108,8 @@ rule split_r2:
   input:
     f'{qc_data}/{sample}_linker2_R2.fastq.gz'
   output:
-    out1 = '{cr_data}/{sample}_S1_L001_R3_001.fastq',
-    out2 = '{cr_data}/{sample}_S1_L001_R2_001.fastq'
+    out1 = f'{cr_data}/{sample}_S1_L001_R3_001.fastq',
+    out2 = f'{cr_data}/{sample}_S1_L001_R2_001.fastq'
 
   shell:
     '''
@@ -123,7 +123,7 @@ rule R1_rename: # Needed for snakemake wildcard consistency
   input:
     f'{qc_data}/{sample}_linker2_R1.fastq.gz'
   output:
-    '{cr_data}/{sample}_S1_L001_R1_001.fastq.gz'
+    f'{cr_data}/{sample}_S1_L001_R1_001.fastq.gz'
   shell:
     '''
     cp {input} {output}
@@ -135,7 +135,7 @@ rule cell_ranger:
     in2 = f'{cr_data}/{sample}_S1_L001_R2_001.fastq',
     in3 = f'{cr_data}/{sample}_S1_L001_R3_001.fastq'
   output:
-    '{inputs_dir}/{sample}/outs/complete.txt'
+    f'{inputs_dir}/{sample}/outs/complete.txt'
   shell:
     '''
     {cellranger_path} count \
