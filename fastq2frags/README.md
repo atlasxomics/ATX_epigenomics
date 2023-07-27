@@ -40,6 +40,10 @@ Due to the system requirements of Cell Ranger ATAC, the pipeline must be run in 
 An example of running the pipeline in an HPC can be found [here](https://github.com/di-0579/Spatial_epigenome-transcriptome_co-sequencing/tree/main/Data_preprocessing/Spatial-ATAC-seq).
 
 ## running the pipeline
+<div>
+    <img src="../static/dirs.png" alt="dag" width="400"/>
+</div>
+
 1. Ensure cellranger-atac-cs/1.2.0/lib/python/barcodes/737K-cratac-v1.txt matches the barcode file in top directory.
 2. Configure Snakefile.
 3. Activate conda snakemake env and run `snakemake -j 32`
