@@ -1,10 +1,15 @@
 # references 
-preprocessing/refdata-cellranger-arc-GRCh38-2020-A-2.0.0
-preprocessing/refdata-cellranger-arc-mm10-2020-A-2.0.0
+fastq2frags/refdata-cellranger-arc-GRCh38-2020-A-2.0.0
+fastq2frags/refdata-cellranger-arc-mm10-2020-A-2.0.0
 
 # software packages
-preprocessing/cellranger-atac-2.1.0
-preprocessing/bbmap
+fastq2frags/cellranger-atac-2.1.0
+fastq2frags/bbmap
+
+# in/out files, assume 'D' prefix
+fastq2frags/fastqs/D*
+fastq2frags/outputs/D*
+
 
 # python stuff
 __pycache__/
@@ -15,6 +20,9 @@ __pycache__/
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
+
+# snakemake
+fastq2frags/.snakemake
 
 # Environments
 .env
