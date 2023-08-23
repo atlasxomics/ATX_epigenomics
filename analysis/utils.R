@@ -9,7 +9,7 @@ build_atlas_seurat_object <- function(
     matrix,
     metadata,
     spatial_path) {
-  # Prepare and combine gene matrix, metadata, and image for seurat object
+  # Prepare and combine gene matrix, metadata, and image for SeuratObject
   # for runs within a project.
 
   image <- Read10X_Image(

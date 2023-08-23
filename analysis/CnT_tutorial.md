@@ -20,7 +20,7 @@ demonstrate:
 
 -   Creation of ArchR analysis objects and basic QC
 -   Dimensionality reduction and clustering
--   Creation of spatial Seurat objects and spatial QC
+-   Creation of spatial SeuratObjects and spatial QC
 -   Differential gene regulation
 -   Peak calling and motif annotation
 -   Spatial analysis of genes and motifs
@@ -47,7 +47,7 @@ source("utils.R")
 
 ```
 
-## Setup environment, set globals
+## Setup environment, set global variables
 
 ```{r message=FALSE}
 
@@ -82,7 +82,7 @@ position_files <- c(
 
 ```
 
-## ArchR Project Generation
+## ArchR Project generation
 
 ### Generate Arrow Files from fragment files
 
@@ -225,6 +225,7 @@ proj <- addUMAP(
 )
 
 ```
+### Plot UMAP and cluster distribution
 
 The UMAP can be visualized and colored by sample and clusters.
 
@@ -294,9 +295,11 @@ saveArchRProject(
 
 ```
 
-## Seurat Object Visualization
+## SeuratObject visualization
 
-Create a metadata table for Seurat object.
+### Build SeuratObjects
+
+Create a metadata table for SeuratObject.
 
 ```{r}
 
@@ -312,7 +315,7 @@ metadata["log10_nFrags"] <- log(metadata$nFrags)
 
 ```
 
-Create a gene matrix for Seurat object.
+Create a gene matrix for SeuratObject.
 
 ```{r}
 
@@ -348,7 +351,7 @@ for (i in seq_along(run_ids)) {
 
 ```
 
-### Spatial Cluster Plots
+### Spatial cluster plots
 
 Plot the clusters identities of each tixel overlaid on top of the tissue
 image with `spatial_plot()` from utils.R; this functions call the Seurat
@@ -379,7 +382,7 @@ final
 
 ![](./figures/spatialdimplots.png)
 
-### Spatial QC Plots
+### Spatial QC plots
 
 Plot qc metrics of each tixel overlaid on top of the tissue image with
 `feature_plot()` from utils.R; this functions call the Seurat function
@@ -406,7 +409,7 @@ spatial_qc_plots[[1]] + spatial_qc_plots[[2]] + spatial_qc_plots[[3]]
 
 ![](./figures/lognfrags.png)
 
-### Spatial Genes Plots
+### Spatial genes plots
 
 ```{r}
 
@@ -426,8 +429,14 @@ spatial_gene_plots[[1]] + spatial_gene_plots[[2]] + spatial_gene_plots[[3]]
 
 ## Differential gene regulation
 
-Extract gene activity scores and identify marker genes with thresholds
-FDR \<= 0.05, Log2FC \>= 0.2; save to a csv for later analysis.
+### Identify marker genes
+
+Extract [gene
+scores](https://www.archrproject.com/bookdown/gene-scores-and-marker-genes-with-archr.html)
+and identify marker genes with thresholds **FDR \<= 0.05, Log2FC \>=
+0.2**. `getMarkerFeatures()` returns a `SummarizedExperiment` object for
+downstream analysis; `getMarkers()` converts the `SummarizedExperiment`
+to a DataFrame that can be saved for later analysis.
 
 ```{r}
 
@@ -440,11 +449,14 @@ markersGS <- getMarkerFeatures(
 )
 
 markerList <- getMarkers(markersGS, cutOff = "FDR <= 0.05 & Log2FC >= 0.2")
-write.csv(markerList, file = "markerList.csv", row.names = FALSE)
+write.csv(markerList, file = "CnT_outs/markerList.csv", row.names = FALSE)
 
 ```
 
-### Plot differential gene activity scores by cluster
+### Marker gene heatmaps
+
+A heatmap of all marker genes by cluster can be plotted with
+plotMarkerHeatmap.
 
 ```{r}
 
@@ -456,59 +468,22 @@ heatmapGS <- plotMarkerHeatmap(
 
 ComplexHeatmap::draw(
   heatmapGS,
+  heatmap_legend_side = "bot",
   annotation_legend_side = "bot"
 )
 
 ```
 
-### Plot heat map of select gene activity scores
+![](./figures/markerGenes_all.png)
+
+A subset of markers genes can be plotted as well.
 
 ```{r}
 
-subsetSE <- markersGS[which(rowData(markersGS)$name %in%
-  c(
-    "Gfap",
-    "Aqp4",
-    "Ndrg2",
-    "Aldh1l1",
-    "Tmem119",
-    "Itgam",
-    "Cx3cr1",
-    "Opalin",
-    "Mog",
-    "Olig2",
-    "S100b",
-    "Rbfox3",
-    "Gad1",
-    "Syt1",
-    "Nefh"
-  )
-), ]
-
-heatmapGS <- plotMarkerHeatmap(
-  seMarker = subsetSE,
-  cutOff = "FDR <= 0.05 & Log2FC >= 0.2",
-  transpose = TRUE
-)
-
-# Plot subset heatmap
-heatmap(
-  as.matrix(heatmapGS@matrix),
-  scale = "column",
-  col = viridis::viridis(50)
-)
-
-```
-
-### Track Plotting with ArchRBrowser
-
-```{r}
-
-# define genes to looks at in browser tracks
-markerGenes  <- c(
+marker_genes_subset  <- c(
     "Tmem119", "Cx3cr1", "Itgam", # microglia
     "Slc1a2", "Gfap", # astrocytes
-    "Mbp", "Opalin", "Mog", "Mobp", "Cspg4", "Cldn11", # oligodendrocytes
+    "Mbp", "Opalin", "Mog", "Mobp", "Cspg4", "Cldn11", "Olig1", # oligodendrocytes
     "Nefh", "Syt1", "Rbfox3", # neurons
     "Slc17a7", # excitatory neuron
     "Gad1", # inhibitory neuron 
@@ -516,10 +491,37 @@ markerGenes  <- c(
     "Prox1" # denate gyrus  
   )
 
+subsetSE <- markersGS[which(rowData(markersGS)$name %in% marker_genes_subset), ]
+
+heatmapGS_subset <- plotMarkerHeatmap(
+  seMarker = subsetSE,
+  cutOff = "FDR <= 0.05 & Log2FC >= 0.2",
+  transpose = TRUE
+)
+
+heatmap(
+  as.matrix(heatmapGS_subset@matrix),
+  scale = "column",
+  col = viridis::viridis(50)
+)
+
+```
+
+![](./figures/markGene_subset.png)
+
+### Genome tracks of marker genes
+
+Local chromatin accessablity can be plotted against [genome browser
+tracks](https://www.archrproject.com/bookdown/track-plotting-with-archrbrowser.html).
+Here, we plot all genes in `marker_genes_subset` and save them as PDF in
+the ArchRProject/Plots directory.
+
+```{r}
+
 tracks <- plotBrowserTrack(
   ArchRProj = proj, 
   groupBy = "Clusters",
-  geneSymbol = markerGenes,
+  geneSymbol = marker_genes_subset,
   upstream = 50000,
   downstream = 50000
 )
@@ -535,14 +537,16 @@ plotPDF(
 
 ```
 
-To plot a track of a specific gene, we can select one from the list.
+`grid` can be used to plot specific genes from the list.
 
 ```{r}
 
 grid::grid.newpage()
-grid::grid.draw(tracks$Prox1)
+grid::grid.draw(tracks$Olig1)
 
 ```
+
+![](./figures/olig1_track.png)
 
 Save your project.
 
@@ -555,28 +559,21 @@ saveArchRProject(
 
 ```
 
-## Peak Calling and Motif Annotation
+## Peak Calling
 
-Marker genes imputation with MAGIC; because of the sparsity of
-scATAC-seq data, you can use MAGIC to impute gene scores by smoothing
-signal across nearby cells.
+[Pseudo-bulk
+replicates](https://www.archrproject.com/bookdown/making-pseudo-bulk-replicates.html)
+must be created for our clusters before peak calling can be performed;
+they are added to the ArchRProject with the `addGroupCoverages()`
+function. [Peak
+calling](https://www.archrproject.com/bookdown/calling-peaks-w-macs2.html)
+is performed with MACS2; specifically, we have found **MACS2 v-2.2.6**
+to be compatible with ArchR. The function `findMacs2()` can be used to
+find the path to your MACS2 instillation.
 
 ```{r}
 
 proj <- addImputeWeights(proj)
-
-```
-
-### Peak Calling
-
-[Pseudo-bulk
-replicates](https://www.archrproject.com/bookdown/making-pseudo-bulk-replicates.html)
-are created with the addGroupCoverages() function. [Peak
-calling](https://www.archrproject.com/bookdown/calling-peaks-w-macs2.html)
-is performed with macs2; specifically, we have found that **macs2
-v-2.2.6** is compatiable with ArchR.
-
-```{r}
 
 proj <-addGroupCoverages(
   ArchRProj = proj,
@@ -594,13 +591,13 @@ proj <- addReproduciblePeakSet(
 
 ```
 
-Plot peaks distribution
+### Plot peak distribution amoung clusters
 
 ```{r}
 
 peakdistribution = proj@peakSet@metadata$PeakCallSummary
 
-comp1_peak= ggplot(peakdistribution, aes(fill = Var1, y = Freq, x = Group)) + 
+comp1_peak <- ggplot(peakdistribution, aes(fill = Var1, y = Freq, x = Group)) + 
   geom_bar(position = "stack", stat = "identity")
 
 comp1_peak
@@ -647,6 +644,8 @@ write.csv(
 
 ```
 
+### Plot marker peaks
+
 Create a heatmap of differentially regulated peaks.
 
 ```{r}
@@ -670,7 +669,11 @@ plotPDF(
 
 ```
 
-### Add motif annotations
+## Motif Enrichment
+
+[Motif
+annotations](https://www.archrproject.com/bookdown/motif-enrichment-in-differential-peaks.html)
+can be added to an ArchRProject with `addMotifAnnotations()`.
 
 ```{r}
 
@@ -686,7 +689,7 @@ proj <- addMotifAnnotations(
 ### Perform motif enrichment in marker peaks
 
 Compute per-cell deviations across all of our motif annotations using
-the addDeviationsMatrix() function
+the `addDeviationsMatrix()` function
 
 ```{r}
 
@@ -696,7 +699,11 @@ proj <- addDeviationsMatrix(
   force = TRUE
 )
 
-plotVarDev <- getVarDeviations(proj, name = "MotifMatrix", plot = TRUE)
+plotVarDev <- getVarDeviations(
+  proj,
+  name = "MotifMatrix",
+  plot = TRUE
+)
 
 SampleMotifs <- getMarkerFeatures(
   ArchRProj = proj,
@@ -713,6 +720,12 @@ enrichMotif <- peakAnnoEnrichment(
   peakAnnotation = "Motif",
   cutOff = "FDR <= 0.05 & Log2FC >= 0.1"
 )
+
+```
+
+### Plot a heatmap of motifs enriched in marker peaks
+
+```{r}
 
 heatmapEM <- plotEnrichHeatmap(enrichMotif, n = 7, transpose = TRUE)
 
