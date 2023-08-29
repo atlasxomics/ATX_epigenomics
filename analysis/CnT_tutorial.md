@@ -581,6 +581,7 @@ proj <-addGroupCoverages(
   force = TRUE
 )
 
+# Set to local macs2 installation
 pathToMacs2 <- "/opt/mamba/envs/jupyterlab/bin/macs2"
 
 proj <- addReproduciblePeakSet(
@@ -595,14 +596,19 @@ proj <- addReproduciblePeakSet(
 
 ```{r}
 
-peakdistribution = proj@peakSet@metadata$PeakCallSummary
+peak_distribution = proj@peakSet@metadata$PeakCallSummary
 
-comp1_peak <- ggplot(peakdistribution, aes(fill = Var1, y = Freq, x = Group)) + 
-  geom_bar(position = "stack", stat = "identity")
+comp1_peak <- ggplot(
+  peak_distribution,
+  aes(fill = Var1, y = Freq, x = Group)
+  ) + 
+    geom_bar(position = "stack", stat = "identity")
 
 comp1_peak
 
 ```
+
+![peak_dist](figures/peak_dist.png)
 
 ### Identify marker peaks
 
@@ -628,7 +634,7 @@ markerpeakList <- getMarkers(
 
 write.csv(
   markerpeakList,
-  file = paste0(output_dir, "markerpeakList.csv"),
+  file = paste0("markerpeakList.csv"),
   row.names = FALSE
 )
 
@@ -638,7 +644,7 @@ total <- merge(peak_data, markerpeakList, by = c("start","end"))
 
 write.csv(
   total,
-  file = paste0(output_dir, "complete_peak_list.csv"),
+  file = paste0("complete_peak_list.csv"),
   row.names = FALSE
 )
 
@@ -650,13 +656,13 @@ Create a heatmap of differentially regulated peaks.
 
 ```{r}
 
-heatmapPeaks <- plotMarkerHeatmap(
+heatmap_peaks <- plotMarkerHeatmap(
   seMarker = markersPeaks, 
   cutOff = "FDR <= 0.05 & Log2FC >= 1",
   transpose = TRUE
 )
 
-heatmap_peaks <- draw(heatmapPeaks)
+draw(heatmap_peaks, heatmap_legend_side = "top", show_heatmap_legend = FALSE)
 
 plotPDF(
   heatmap_peaks,
@@ -668,6 +674,8 @@ plotPDF(
 )
 
 ```
+
+![peak_heatmap](figures/peak_heatmap.png)
 
 ## Motif Enrichment
 
@@ -681,7 +689,7 @@ proj <- addMotifAnnotations(
   ArchRProj = proj,
   motifSet = "cisbp",
   name = "Motif",
-  force=TRUE
+  force = TRUE
 )
 
 ```
@@ -689,7 +697,7 @@ proj <- addMotifAnnotations(
 ### Perform motif enrichment in marker peaks
 
 Compute per-cell deviations across all of our motif annotations using
-the `addDeviationsMatrix()` function
+the `addDeviationsMatrix()` function.
 
 ```{r}
 
@@ -738,9 +746,12 @@ plotPDF(
   addDOC = FALSE
 )
 
+# 
 heatmapEM
 
 ```
+
+![motif_heatmap](figures/motif_heatmap.png)
 
 Save your ArchRProject.
 
