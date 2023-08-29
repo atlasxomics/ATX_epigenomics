@@ -32,7 +32,24 @@ build_atlas_seurat_object <- function(
   return(object)
 }
 
+feature_plot <- function(seurat_obj, feature, name) {
+  # Wrapper of Seurat's SpatialFeaturePlot with specific aesthetics
+
+  SpatialFeaturePlot(
+    object = seurat_obj,
+    features = feature,
+    alpha = c(0.2, 1),
+    pt.size.factor = 1) +
+      ggtitle(name) +
+      theme(
+        legend.position = "right",
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 15))
+}
+
 spatial_plot <- function(seurat_object, name) {
+  # Wrapper of Seurat's SpatialDimPlot with specific aesthetics
+
   clusters <- sort(unique(seurat_object$Clusters))
   colors <- ArchRPalettes$stallion2[seq_len(length(clusters))]
   names(colors) <- clusters
@@ -49,17 +66,19 @@ spatial_plot <- function(seurat_object, name) {
       legend.position = "bottom")
 }
 
-feature_plot <- function(seurat_obj, feature, name) {
-  SpatialFeaturePlot(
+geneset_plot <- function(seurat_obj, marker_genes, name, title) {
+  # Return a Seurat SpatialFeaturePlot of the average expression score for a
+  # set of genes.
+
+  seurat_obj <- AddModuleScore(
     object = seurat_obj,
-    features = feature,
-    alpha = c(0.2, 1),
-    pt.size.factor = 1
-  ) +
-    ggtitle(paste0(feature, " : ", name)) +
-    theme(
-      legend.position = "right",
-      plot.title = element_text(hjust = 0.5),
-      text = element_text(size = 15)
-    )
+    features = marker_genes,
+    name = name
+  )
+  plot <- SpatialFeaturePlot(
+    object = seurat_obj,
+    pt = 1,
+    features = paste0(name, 1)) +
+      ggtitle(title) +
+      theme(plot.title = element_text(hjust = 0.5))
 }

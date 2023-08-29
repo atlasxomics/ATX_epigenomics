@@ -30,7 +30,7 @@ demonstrate:
 
 -   Creation of ArchR analysis objects and basic QC
 -   Dimensionality reduction and clustering
--   Creation of spatial SeuratObjects and spatial QC
+-   Creation of spatial Seurat objects and spatial QC
 -   Differential gene regulation
 -   Peak calling and motif annotation
 -   Spatial analysis of genes and motifs
@@ -92,7 +92,7 @@ position_files <- c(
 
 ```
 
-## ArchRProject generation
+## ArchR Project Generation
 
 ### Generate Arrow Files from fragment files
 
@@ -176,11 +176,9 @@ plotFragmentSizes(proj)
 
 ```
 
-![](./figures/tss_enrichment.png)
+![](figures/tss_enrichment.png)
 
-![](./figures/frag_distribution.png)
-
-<br>
+![](figures/frag_distribution.png)
 
 ## Dimensionality reduction and clustering
 
@@ -201,7 +199,7 @@ proj <- addIterativeLSI(
     resolution = c(0.5),
     sampleCells = 10000,
     n.start = 10
-  ),
+  ), 
   varFeatures = 50000,
   dimsToUse = 1:30,
   force = TRUE
@@ -236,8 +234,8 @@ proj <- addUMAP(
 
 ```
 
-
 ### Plot UMAP and cluster distribution
+
 The UMAP can be visualized and colored by sample and clusters.
 
 ```{r}
@@ -262,7 +260,7 @@ p1 + p2
 
 ```
 
-![](./figures/umap.png)
+![](figures/umap.png){width="2550"}
 
 Plot cluster distribution by sample
 
@@ -271,10 +269,10 @@ Plot cluster distribution by sample
 df1 <- as.data.frame(proj@cellColData)
 n_clusters <- length(unique(proj$Clusters))
 colors <- ArchRPalettes$stallion[as.character(seq_len(n_clusters))]
-names(colors) <- paste0('C', seq_len(n_clusters))
+names(colors) <- paste0("C", seq_len(n_clusters))
 
 df2 <- df1 %>% group_by(Sample, Clusters) %>%
-  summarise(total_count=n(), .groups = "drop") %>%
+  summarise(total_count = n(), .groups = "drop") %>%
   as.data.frame()
 
 comp1 <- ggplot(df2, aes(fill = Clusters, y = total_count, x = Sample)) +
@@ -291,7 +289,7 @@ comp1 + comp2 + comp3
 
 ```
 
-![](./figures/cluster_distribution.png)
+![](figures/cluster_distribution.png){width="860"}
 
 It's a good idea to frequently save your ArchRProject, especially after
 running expensive computations.
@@ -326,7 +324,7 @@ metadata["log10_nFrags"] <- log(metadata$nFrags)
 
 ```
 
-Create a gene matrix for SeuratObject.
+Create a gene matrix for Seurat object.
 
 ```{r}
 
@@ -371,27 +369,23 @@ function
 
 ```{r}
 
-spatial_cluster_plots = list()
+spatial_cluster_plots <- list()
 for (i in seq_along(run_ids)){
   plot <- spatial_plot(seurat_objs[[i]], run_ids[i])
   spatial_cluster_plots[[i]] <- plot
 }
 
-final <- ggarrange(
-  spatial_cluster_plots[[1]],
-  spatial_cluster_plots[[2]],
-  spatial_cluster_plots[[3]],
+ggarrange(
+  plotlist = spatial_cluster_plots,
   ncol = 3,
   nrow = 1,
   common.legend = TRUE,
   legend = "bottom"
 )
 
-final
-
 ```
 
-![](./figures/spatialdimplots.png)
+![](figures/spatialdimplots.png)
 
 ### Spatial QC plots
 
@@ -414,11 +408,11 @@ for (i in seq_along(run_ids)){
   spatial_qc_plots[[i]] <- plot
 }
 
-spatial_qc_plots[[1]] + spatial_qc_plots[[2]] + spatial_qc_plots[[3]]
+ggarrange(plotlist = spatial_qc_plots, ncol = 3, nrow = 1, legend = "right")
 
 ```
 
-![](./figures/lognfrags.png)
+![](figures/lognfrags.png){width="738"}
 
 ### Spatial genes plots
 
@@ -432,11 +426,11 @@ for (i in seq_along(run_ids)){
   spatial_gene_plots[[i]] <- plot
 }
 
-spatial_gene_plots[[1]] + spatial_gene_plots[[2]] + spatial_gene_plots[[3]]
+ggarrange(plotlist = spatial_gene_plots, ncol = 3, nrow = 1, legend = "right")
 
 ```
 
-![](./figures/spatial_gene_plot.png)
+![](figures/spatial_gene_plot.png){width="770"}
 
 ## Differential gene regulation
 
@@ -497,9 +491,9 @@ marker_genes_subset  <- c(
     "Mbp", "Opalin", "Mog", "Mobp", "Cspg4", "Cldn11", "Olig1", # oligodendrocytes
     "Nefh", "Syt1", "Rbfox3", # neurons
     "Slc17a7", # excitatory neuron
-    "Gad1", # inhibitory neuron 
+    "Gad1", # inhibitory neuron
     "Pdgfrb", "Ng2", # pericyte
-    "Prox1" # denate gyrus  
+    "Prox1" # denate gyrus
   )
 
 subsetSE <- markersGS[which(rowData(markersGS)$name %in% marker_genes_subset), ]
@@ -518,7 +512,7 @@ heatmap(
 
 ```
 
-![](markGene_subset.png)
+![](figures/markGene_subset.png)
 
 ### Genome tracks of marker genes
 
@@ -530,7 +524,7 @@ the ArchRProject/Plots directory.
 ```{r}
 
 tracks <- plotBrowserTrack(
-  ArchRProj = proj, 
+  ArchRProj = proj,
   groupBy = "Clusters",
   geneSymbol = marker_genes_subset,
   upstream = 50000,
@@ -539,7 +533,7 @@ tracks <- plotBrowserTrack(
 
 # save tracks to pdf
 plotPDF(
-  tracks, 
+  tracks,
   ArchRProj = proj,
   length = 6,
   name = "Gene_Tracks",
@@ -557,7 +551,7 @@ grid::grid.draw(tracks$Olig1)
 
 ```
 
-![](olig1_track.png)
+![](figures/olig1_track.png)
 
 Save your project.
 
@@ -586,12 +580,13 @@ find the path to your MACS2 instillation.
 
 proj <- addImputeWeights(proj)
 
-proj <-addGroupCoverages(
+proj <- addGroupCoverages(
   ArchRProj = proj,
   groupBy = "Clusters",
   force = TRUE
 )
 
+# Set to local macs2 installation
 pathToMacs2 <- "/opt/mamba/envs/jupyterlab/bin/macs2"
 
 proj <- addReproduciblePeakSet(
@@ -606,14 +601,19 @@ proj <- addReproduciblePeakSet(
 
 ```{r}
 
-peakdistribution = proj@peakSet@metadata$PeakCallSummary
+peak_distribution <- proj@peakSet@metadata$PeakCallSummary
 
-comp1_peak <- ggplot(peakdistribution, aes(fill = Var1, y = Freq, x = Group)) + 
-  geom_bar(position = "stack", stat = "identity")
+comp1_peak <- ggplot(
+  peak_distribution,
+  aes(fill = Var1, y = Freq, x = Group)
+  ) +
+    geom_bar(position = "stack", stat = "identity")
 
 comp1_peak
 
 ```
+
+![](figures/peak_dist.png)
 
 ### Identify marker peaks
 
@@ -639,17 +639,17 @@ markerpeakList <- getMarkers(
 
 write.csv(
   markerpeakList,
-  file = paste0(output_dir, "markerpeakList.csv"),
+  file = paste0("markerpeakList.csv"),
   row.names = FALSE
 )
 
 # Collect data with annotations
-peak_data = data.frame(proj@peakSet@ranges,proj@peakSet@elementMetadata)
-total <- merge(peak_data, markerpeakList, by = c("start","end"))
+peak_data = data.frame(proj@peakSet@ranges, proj@peakSet@elementMetadata)
+total <- merge(peak_data, markerpeakList, by = c("start", "end"))
 
 write.csv(
   total,
-  file = paste0(output_dir, "complete_peak_list.csv"),
+  file = paste0("complete_peak_list.csv"),
   row.names = FALSE
 )
 
@@ -661,13 +661,13 @@ Create a heatmap of differentially regulated peaks.
 
 ```{r}
 
-heatmapPeaks <- plotMarkerHeatmap(
-  seMarker = markersPeaks, 
+heatmap_peaks <- plotMarkerHeatmap(
+  seMarker = markersPeaks,
   cutOff = "FDR <= 0.05 & Log2FC >= 1",
   transpose = TRUE
 )
 
-heatmap_peaks <- draw(heatmapPeaks)
+draw(heatmap_peaks, heatmap_legend_side = "top", show_heatmap_legend = FALSE)
 
 plotPDF(
   heatmap_peaks,
@@ -679,6 +679,8 @@ plotPDF(
 )
 
 ```
+
+![](figures/peak_heatmap.png)
 
 ## Motif Enrichment
 
@@ -692,7 +694,7 @@ proj <- addMotifAnnotations(
   ArchRProj = proj,
   motifSet = "cisbp",
   name = "Motif",
-  force=TRUE
+  force = TRUE
 )
 
 ```
@@ -753,55 +755,48 @@ heatmapEM
 
 ```
 
+![](figures/motif_heatmap.png)
+
 Save your ArchRProject.
 
 ```{r}
 
 saveArchRProject(
   ArchRProj = proj,
-  outputDirectory = output_dir,
   load = FALSE
 )
 
 ```
 
-## Cell typing (IN PROGRESS)
+## Approximate cell typing
+
+<https://satijalab.org/seurat/reference/addmodulescore>
+
+Marker genes:
+
+-   microglia: "Tmem119", "Cx3cr1", "Itgam"
+-   astrocytes: "Slc1a2", "Gfap"
+-   oligodendrocytes: "Mbp", "Opalin", "Mog", "Mobp", "Cspg4", "Cldn11",
+    "Olig1"
+-   neurons: "Nefh", "Syt1", "Rbfox3"
+-   excitatory neurons: "Slc17a7"
+-   inhibitory neuron: "Gad1"
+-   pericyte: "Pdgfrb"
+-   denate gyrus: "Prox1"
 
 ```{r}
-# this dont work
-Cell_types <- function(sero, marker_genes, name, title){
-  
-  object_mg <- AddModuleScore(
-    object = sero,
-    features = marker_genes,
-    name = name
-  )
-  mg <-SpatialFeaturePlot(
-    object = object_mg,
-    pt = 1,
-    features = paste0(name, '1')) +
-  ggtitle(title)
-  
-  return (mg)
+
+marker_genes <- c("Mbp", "Opalin", "Mog", "Mobp", "Cspg4", "Cldn11", "Olig1")
+cell_type <- "oligodendrocytes"
+
+geneset_plots <- list()
+for (i in seq_along(run_ids)){
+  plot <- geneset_plot(seurat_objs[[i]], marker_genes, cell_type, run_ids[i])
+  geneset_plots[[i]] <- plot
 }
 
-plot_Cell_types <- function(marker_genes, name){
-  
-  return (
-    ggarrange(
-      Cell_types(D1281_spatial_motif, marker_genes, name, 'D865'),
-      Cell_types(D1282_spatial_motif, marker_genes, name, 'D866'),
-      Cell_types(D1283_spatial_motif, marker_genes, name, 'D867'),
-      ncol = 2,
-      nrow = 1,
-      common.legend = FALSE,
-      legend="right"
-    )
-  )
-}
-
-#General CM: 
-microglia <- c("Smad9-884")
-m <- plot_Cell_types(microglia, 'microglia')
+ggarrange(plotlist = geneset_plots, ncol = 3, nrow = 1, legend = "right")
 
 ```
+
+![](figures/cell_type.png)
