@@ -528,7 +528,7 @@ ComplexHeatmap::draw(
 
 ```
 
-![](markerGenes_all.png)
+![](figures/markerGenes_all.png)
 
 A subset of markers genes can be plotted as well.
 
