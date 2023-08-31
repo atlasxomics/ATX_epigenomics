@@ -111,7 +111,7 @@ containing sample info for analysis.
 
 -   position_files: local paths to the `tissue_positions_list.csv` for
     each experiment; these files contain tixel coordinates and on/off
-    tissue designatins for each tixel.
+    tissue designations for each tixel.
 
 ```{r message=FALSE}
 
@@ -538,7 +538,7 @@ ComplexHeatmap::draw(
 
 ```
 
-![](markerGenes_all.png)
+![markerGenes_all.png](figures/markerGenes_all.png)
 
 A subset of markers genes can be plotted as well.
 
