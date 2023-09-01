@@ -39,6 +39,7 @@ library(ggpubr)
 library(grid)
 library(harmony)
 library(knitr)
+library(magick)
 library(Matrix)
 library(patchwork)
 library(pheatmap)
@@ -101,7 +102,7 @@ containing sample info for analysis.
 
 -   position_files: local paths to the `tissue_positions_list.csv` for
     each experiment; these files contain tixel coordinates and on/off
-    tissue designatins for each tixel.
+    tissue designations for each tixel.
 
 ```{r message=FALSE}
 
@@ -170,7 +171,8 @@ ArrowFiles <- createArrowFiles(
   minTSS = 2,
   minFrags = 0,
   maxFrags = 1e+07,
-  TileMatParams = list(tileSize = 5000)
+  TileMatParams = list(tileSize = 5000),
+  force = TRUE
 )
 
 ```
@@ -338,7 +340,7 @@ comp1 + comp2 + comp3
 
 ```
 
-![](figures/cluster_distribution.png){width="860"}
+![cluster_distribution](figures/cluster_distribution.png){width="860"}
 
 It's a good idea to frequently save your ArchRProject, especially after
 running expensive computations.
@@ -434,7 +436,7 @@ ggarrange(
 
 ```
 
-![](figures/spatialdimplots.png)
+![spatialdimplots](figures/spatialdimplots.png){width="800"}
 
 ### Spatial QC plots
 
@@ -449,7 +451,7 @@ QC metrics to plot include:
 
 ```{r}
 
-metric <- "log10_nFrags"
+metric <- "TSSEnrichment"
 
 spatial_qc_plots <- list()
 for (i in seq_along(run_ids)){
@@ -461,7 +463,7 @@ ggarrange(plotlist = spatial_qc_plots, ncol = 3, nrow = 1, legend = "right")
 
 ```
 
-![](figures/lognfrags.png){width="738"}
+![](figures/tssenrichment.png){width="738"}
 
 ### Spatial genes plots
 
@@ -479,7 +481,7 @@ ggarrange(plotlist = spatial_gene_plots, ncol = 3, nrow = 1, legend = "right")
 
 ```
 
-![](figures/spatial_gene_plot.png){width="770"}
+![spatial_gene_plo](figures/spatial_gene_plot.png){width="770"}
 
 ## Differential gene regulation
 
@@ -503,7 +505,7 @@ markersGS <- getMarkerFeatures(
 )
 
 markerList <- getMarkers(markersGS, cutOff = "FDR <= 0.05 & Log2FC >= 0.2")
-write.csv(markerList, file = "CnT_outs/markerList.csv", row.names = FALSE)
+write.csv(markerList, file = "markerList.csv", row.names = FALSE)
 
 ```
 
@@ -517,7 +519,8 @@ plotMarkerHeatmap.
 heatmapGS <- plotMarkerHeatmap(
   seMarker = markersGS,
   cutOff = "FDR <= 0.05 & Log2FC >= 0.2",
-  transpose = TRUE
+  transpose = TRUE,
+  labelMarkers = NULL
 )
 
 ComplexHeatmap::draw(
@@ -528,7 +531,7 @@ ComplexHeatmap::draw(
 
 ```
 
-![](figures/markerGenes_all.png)
+![markerGenes_all.png](figures/markerGenes_all.png)
 
 A subset of markers genes can be plotted as well.
 
@@ -561,7 +564,7 @@ heatmap(
 
 ```
 
-![](figures/markGene_subset.png)
+![markGene_subset](figures/markGene_subset.png)
 
 ### Genome tracks of marker genes
 
@@ -600,7 +603,7 @@ grid::grid.draw(tracks$Olig1)
 
 ```
 
-![](figures/olig1_track.png)
+![olig1_track](figures/olig1_track.png)
 
 Save your project.
 
@@ -636,7 +639,7 @@ proj <- addGroupCoverages(
 )
 
 # Set to local macs2 installation
-pathToMacs2 <- "/opt/mamba/envs/jupyterlab/bin/macs2"
+pathToMacs2 <- findMacs2()
 
 proj <- addReproduciblePeakSet(
   ArchRProj = proj,
@@ -662,7 +665,7 @@ comp1_peak
 
 ```
 
-![](figures/peak_dist.png)
+![peak_dist](figures/peak_dist.png)
 
 ### Identify marker peaks
 
@@ -729,7 +732,7 @@ plotPDF(
 
 ```
 
-![](figures/peak_heatmap.png)
+![peak_heatmap](figures/peak_heatmap.png)
 
 ## Motif Enrichment
 
@@ -804,7 +807,7 @@ heatmapEM
 
 ```
 
-![](figures/motif_heatmap.png)
+![motif_heatmap](figures/motif_heatmap.png)
 
 Save your ArchRProject.
 
@@ -848,4 +851,4 @@ ggarrange(plotlist = geneset_plots, ncol = 3, nrow = 1, legend = "right")
 
 ```
 
-![](figures/cell_type.png)
+![cell_type](figures/cell_type.png)
