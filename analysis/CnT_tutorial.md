@@ -67,7 +67,7 @@ This tutorial assumes that example data (fragments, spatial folders) is
 saved in in this repository in the structure described in the README.md
 in this directory. To access example data, please contact your
 AtlasXomics support scientist or contact
-[support\@atlasxomics.com](mailto:support@atlasxomics.com){.email}.
+[support\@atlasxomics.com](mailto:support@atlasxomics.com).
 
 Here, we set ArchR global variables, and three character vectors
 containing sample info for analysis.
@@ -75,7 +75,7 @@ containing sample info for analysis.
 -   addArchRThreads: number of threads to use for paralelle processing;
     by defaults `threads` is set to one half of available threads. ArchR
     [recommends](https://www.archrproject.com/bookdown/getting-set-up.html)
-    setting `treads` to 1/2-3/4 total available cores.
+    setting `threads` to 1/2-3/4 total available cores.
 
 -   addArchRGenome: reference genome to be used for gene and genome
     annotations; Archr natively supports **hg19, hg38, mm9, and mm10**
