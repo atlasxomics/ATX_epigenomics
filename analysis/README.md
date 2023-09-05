@@ -21,6 +21,6 @@ To access example data, please contact your AtlasXomics support scientist or con
 
 ## dependiencies
 * [ArchR v1.0.2](https://www.archrproject.com/)
-    > ArchR is designed to run on UNIX-based platforms (Linux, Mac); it is not support for Windows.
+    > ArchR is designed to run on UNIX-based platforms (Linux, Mac); it is not supported for Windows.
 * [Seurat v4.3.0](https://satijalab.org/seurat/)
 * [macs2 v2.2.6](https://pypi.org/project/MACS2/2.2.6/)
