@@ -21,7 +21,7 @@ demonstrate:
 -   Creation of an ArchR analysis objects and basic QC
 -   Dimensionality reduction and clustering
 -   Creation of spatial Seurat objects and spatial QC
--   Differential gene regulation
+-   Analysis of differential gene regulation
 -   Peak calling and motif annotation
 -   Spatial analysis of genes and motifs
 -   Cell typing with spatial mapping
@@ -64,24 +64,24 @@ app. For our custom alignment and preprocessing workflow, see
 `fastq2frags/` in this repository.
 
 This tutorial assumes that example data (fragments, spatial folders) is
-saved in in this repository in the structure described in the README.md
-in this directory. To access example data, please contact your
-AtlasXomics support scientist or contact
+saved in this repository in the structure described in the README.md of
+this directory. To access example data, please contact your AtlasXomics
+support scientist or contact
 [support\@atlasxomics.com](mailto:support@atlasxomics.com).
 
-Here, we set ArchR global variables, and three character vectors
+Below, we set ArchR global variables, and three character vectors
 containing sample info for analysis.
 
--   addArchRThreads: number of threads to use for paralelle processing;
-    by defaults `threads` is set to one half of available threads. ArchR
+-   addArchRThreads: number of threads to use for parallel processing;
+    by default `threads` is set to one half of available threads. ArchR
     [recommends](https://www.archrproject.com/bookdown/getting-set-up.html)
-    setting `threads` to 1/2-3/4 total available cores.
+    setting `treads` to 1/2-3/4 total available cores.
 
 -   addArchRGenome: reference genome to be used for gene and genome
-    annotations; Archr natively supports **hg19, hg38, mm9, and mm10**
-    and allows for the creation of custom references. Here we use "mm10"
-    (BSgenome.Mmusculus.UCSC.mm10). For more information on ArchR
-    reference genomes, see ArchR
+    annotations; Archr natively supports **hg19, hg38, mm9,** and
+    **mm10** and allows for the creation of custom references. Here we
+    use "mm10" (BSgenome.Mmusculus.UCSC.mm10). For more information on
+    ArchR reference genomes, see ArchR
     [documentation](https://www.archrproject.com/bookdown/getting-set-up.html).
 
 -   run_ids: identifiers for the runs/experiments included in the
@@ -135,7 +135,7 @@ position_files <- c(
 
 ```
 
-## ArchRProject generation
+### ArchRProject generation
 
 ### Generate Arrow files from fragment files
 
@@ -143,25 +143,30 @@ position_files <- c(
 files](https://www.archrproject.com/bookdown/what-is-an-arrow-file-archrproject.html)
 are the basic unit of analysis in ArchR. Arrow files save all sample
 data on disk as HDF5 files and are updated with additional layers as
-analysis progress. Arrow files are associated with a ArchRProject which
-can be accessed by R and stored in memory.
+analysis progress. Arrow files are associated together in an
+'ArchRProject' which can be accessed by R and stored in memory.
 
 For each sample, an Arrow file is generated from a [fragment
 file](https://www.archrproject.com/bookdown/input-file-types-in-archr.html).
 Fragment file paths and run ids are supplied to
 [createArrowFiles()](https://www.archrproject.com/reference/createArrowFiles.html)
-as character vectors.
+as character vectors. Here, we use fragment.tsv.gz files (typical output
+of our pipeline and Cell Ranger ATAC) but BAM files can be used as well.
 
 Parameters `minTSS` and `minFrags` can used to remove low-quality tixels
-from analysis.
+from analysis. We set minFrags to 0 because we have found tixels with
+low fragment counts are removed during on/off-tissue filter (below).
 
 By default, `createArrowFiles()` generates a
 [TileMatrix](https://www.archrproject.com/reference/addTileMatrix.html)
-(fragment counts per tile/bin per cell) and a
+(fragment counts per bin per cell) and a
 [GeneScoreMatrix](https://www.archrproject.com/bookdown/calculating-gene-scores-in-archr.html)
 (computed gene activity per cell) for each sample; here we increase the
 size of tiles from 500 to 5000 according to [Deng,
 2022](https://www.nature.com/articles/s41586-022-05094-1).
+
+This step can take over 20 minutes, depending on compute resources
+available.
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -222,22 +227,32 @@ generated.
 
 ```{r}
 
-plotTSSEnrichment(proj)
-plotFragmentSizes(proj)
+
+p1 <- plotFragmentSizes(proj)
+p2 <- plotGroups(
+  ArchRProj = proj,
+  groupBy = "Sample",
+  colorBy = "cellColData",
+  name = "TSSEnrichment",
+  plotAs = "violin",
+  alpha = 0.4,
+  addBoxPlot = TRUE
+)
+
+p1 + p2
 
 ```
 
-![](figures/tss_enrichment.png)
+![qc_plots](figures/qc_plots.png)
 
-![](figures/frag_distribution.png)
+## Dimensionality reduction and clustering
 
-## Dimensionality reduction, clustering, UMAP plotting
-
-Dimension reduction performed with ArchR LSI function; batch correction
-performed with
-[Harmony](https://www.archrproject.com/bookdown/batch-effect-correction-wtih-harmony.html).
-Seurat's `FindClusters()` function is used for [graph
-clustering](https://www.archrproject.com/bookdown/clustering-using-seurats-findclusters-function.html).
+Due to the sparsity of scATAC-seq data, ArchR
+[recommends](https://www.archrproject.com/bookdown/dimensionality-reduction-with-archr.html)
+using Latent Semantic Indexing (LSI) to first reduce the dimensions of
+the insertion count matrix (TileMatrix) described above). The reduced
+matrix can then be visualized with a conventional dimensionality
+reduction technique (ie. UMAP, t-SNE).
 
 ```{r message=FALSE}
 
@@ -311,13 +326,13 @@ p1 + p2
 
 ```
 
-![](figures/umap.png){width="2550"}
+![umap](figures/umap.png){width="2550"}
 
 Plot cluster distribution by sample
 
 ```{r}
 
-df1 <- as.data.frame(proj@cellColData)
+df1 <- proj@cellColData
 n_clusters <- length(unique(proj$Clusters))
 colors <- ArchRPalettes$stallion[as.character(seq_len(n_clusters))]
 names(colors) <- paste0("C", seq_len(n_clusters))
@@ -359,19 +374,21 @@ saveArchRProject(
 
 ### Build SeuratObjects
 
-Create a metadata table for SeuratObject.
+First, we create a new data frame from the ArchRProject cellColData
+matrix. This data frame will be used for the `meta.data` parameter of
+the `CreateSeuratObject`
+[function](https://www.rdocumentation.org/packages/Seurat/versions/3.0.1/topics/CreateSeuratObject).
+The cellColData matrix contains the data associated with each tixel. We
+convert the name of each tixel to the barcode only (ie.
+D01210#AGAGTCAAACATTGGC-1 -\> AGAGTCAAACATTGGC) with a regular
+expression, and add a column containing the common log of the fragment
+counts.
 
 ```{r}
 
-metadata <- getCellColData(ArchRProj = proj)
-rownames(metadata) <- str_split_fixed(
-  str_split_fixed(
-    row.names(metadata),
-    "#",
-    2)[, 2],
-  "-",
-  2)[, 1]
-metadata["log10_nFrags"] <- log(metadata$nFrags)
+metadata <- getCellColData(proj)
+rownames(metadata) <- gsub(".*#|-1", "", row.names(metadata))
+metadata$log10_nFrags <- log(metadata$nFrags)
 
 ```
 
