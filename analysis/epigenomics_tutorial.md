@@ -1,14 +1,4 @@
----
-title: "Spatial_ATAC-seq"
-output:
-  html_document: default
-editor_options:
-  chunk_output_type: console
-  markdown: 
-    wrap: 72
----
-
-# Tutorial: Spatial-CUT&Tag via DBiT-seq
+# Tutorial: Spatial epigenomics analysis via DBiT-seq
 
 This tutorial provides a brief introduction to epigenomic analysis of
 experiments performed via Deterministic Barcoding in Tissue for Spatial
@@ -25,8 +15,8 @@ tutorials.
 Here we present the analysis of a [spatial
 CUT&Tag](https://www.science.org/doi/10.1126/science.abg7216) experiment
 with triplicate mouse brain sections. The sections were profiled with an
-antibody against **H3K27ac** (activating enhancers and/or promoters). We
-demonstrate:
+antibody against **H3K27ac** (activating enhancers and/or promoters).  Analysis
+for spatial ATAC-seq experiments use similar code for analysis. We demonstrate:
 
 -   Creation of an ArchR analysis objects and basic QC
 -   Dimensionality reduction and clustering
@@ -145,7 +135,7 @@ position_files <- c(
 
 ```
 
-## ArchRProject generation
+### ArchRProject generation
 
 ### Generate Arrow files from fragment files
 
@@ -192,26 +182,13 @@ ArrowFiles <- createArrowFiles(
 
 ```
 
-For each sample, `createArrowFiles` generates [quality control
-plots](https://www.archrproject.com/bookdown/per-cell-quality-control.html)
-and saves them as PDFs to a `QualityControl` folder in the working
-directory.
+Quality control plot PDFs are saved in `./QualityControl` for each
+sample during Arrow file creation.
 
 ### Create ArchRProject
 
 ArchR accesses data by associating the Arrow files on disk with an
-ArchRProject in memory; all samples are combined into a single
-analytical framework.
-
-By default, `ArchRProject()` creates a folder in the working directory
-with the name provided by `outputdirectory`; Arrow files, an .rds file
-containing the ArchRProject, and other data objects generated during
-analysis are saved to this folder.
-
-The ArchRProject can be loaded back into an R session with the
-[command](https://www.archrproject.com/reference/loadArchRProject.html)
-`loadArchRProject`; the .rds file *must* be named
-'Save-ArchR-Project.rds' for the command to work.
+ArchRProject in memory.
 
 ```{r message=FALSE}
 
@@ -224,14 +201,11 @@ proj <- ArchRProject(
 
 ### Filter "off-tissue" tixels
 
-The
+The tissue_positions.csv file generated via
 [AtlasXBrowser](https://docs.atlasxomics.com/projects/AtlasXbrowser/en/latest/Overview.html)
-app outputs a file named tissue_positions_list.csv. Each row in the file
-denotes a tixel barcode with columns denoting row and column indices
-(0-49), and on/off tissue designation (1 or 0). This file can be used to
-remove tixels that are "off-tissue" from further analysis.
+is used to remove 'off-tissue' tixels from analysis.
 
-```{r message=FALSE}
+```{r}
 
 all_ontissue <- c()
 for (i in seq_along(position_files)) {
@@ -244,23 +218,15 @@ proj <- proj[proj$cellNames %in% all_ontissue]
 
 ```
 
-Calling the ArchR project will display summary statistics including the
-number of cell/tixels (post-filtering), median TSS, and median fragment
-count values.
-
-```{r}
-
-proj
-
-```
-
 ### QC plots
 
-Additional QC plots can be generated with ArchR functions; here we plot
-Fragment Size distribution and a violin plot of TSS scores for the
-samples post-tissue filtering.
+Plots of log10(unique nuclear fragments) vs TSS enrichment score and
+fragment size distribution per sample can be found in the
+"QualityControl" folder in working directory. Combined plots can also be
+generated.
 
 ```{r}
+
 
 p1 <- plotFragmentSizes(proj)
 p2 <- plotGroups(
@@ -276,6 +242,8 @@ p2 <- plotGroups(
 p1 + p2
 
 ```
+
+![qc_plots](figures/qc_plots.png)
 
 ## Dimensionality reduction and clustering
 
@@ -358,6 +326,8 @@ p1 + p2
 
 ```
 
+![umap](figures/umap.png){width="2550"}
+
 Plot cluster distribution by sample
 
 ```{r}
@@ -384,6 +354,8 @@ comp3 <- ggplot(df2, aes(fill = Sample, y = total_count, x = Clusters)) +
 comp1 + comp2 + comp3
 
 ```
+
+![cluster_distribution](figures/cluster_distribution.png){width="860"}
 
 It's a good idea to frequently save your ArchRProject, especially after
 running expensive computations.
@@ -481,6 +453,8 @@ ggarrange(
 
 ```
 
+![spatialdimplots](figures/spatialdimplots.png){width="800"}
+
 ### Spatial QC plots
 
 Plot qc metrics of each tixel overlaid on top of the tissue image with
@@ -506,6 +480,8 @@ ggarrange(plotlist = spatial_qc_plots, ncol = 3, nrow = 1, legend = "right")
 
 ```
 
+![](figures/tssenrichment.png){width="738"}
+
 ### Spatial genes plots
 
 ```{r}
@@ -521,6 +497,8 @@ for (i in seq_along(run_ids)){
 ggarrange(plotlist = spatial_gene_plots, ncol = 3, nrow = 1, legend = "right")
 
 ```
+
+![spatial_gene_plo](figures/spatial_gene_plot.png){width="770"}
 
 ## Differential gene regulation
 
@@ -570,20 +548,22 @@ ComplexHeatmap::draw(
 
 ```
 
+![markerGenes_all.png](figures/markerGenes_all.png)
+
 A subset of markers genes can be plotted as well.
 
 ```{r}
 
 marker_genes_subset  <- c(
-  "Tmem119", "Cx3cr1", "Itgam", # microglia
-  "Slc1a2", "Gfap", # astrocytes
-  "Mbp", "Opalin", "Mog", "Mobp", "Cspg4", "Cldn11", "Olig1", #oligodendrocytes
-  "Nefh", "Syt1", "Rbfox3", # neurons
-  "Slc17a7", # excitatory neuron
-  "Gad1", # inhibitory neuron
-  "Pdgfrb", "Ng2", # pericyte
-  "Prox1" # denate gyrus
-)
+    "Tmem119", "Cx3cr1", "Itgam", # microglia
+    "Slc1a2", "Gfap", # astrocytes
+    "Mbp", "Opalin", "Mog", "Mobp", "Cspg4", "Cldn11", "Olig1", # oligodendrocytes
+    "Nefh", "Syt1", "Rbfox3", # neurons
+    "Slc17a7", # excitatory neuron
+    "Gad1", # inhibitory neuron
+    "Pdgfrb", "Ng2", # pericyte
+    "Prox1" # denate gyrus
+  )
 
 subsetSE <- markersGS[which(rowData(markersGS)$name %in% marker_genes_subset), ]
 
@@ -600,6 +580,8 @@ heatmap(
 )
 
 ```
+
+![markGene_subset](figures/markGene_subset.png)
 
 ### Genome tracks of marker genes
 
@@ -637,6 +619,8 @@ grid::grid.newpage()
 grid::grid.draw(tracks$Olig1)
 
 ```
+
+![olig1_track](figures/olig1_track.png)
 
 Save your project.
 
@@ -691,12 +675,14 @@ peak_distribution <- proj@peakSet@metadata$PeakCallSummary
 comp1_peak <- ggplot(
   peak_distribution,
   aes(fill = Var1, y = Freq, x = Group)
-) +
-  geom_bar(position = "stack", stat = "identity")
+  ) +
+    geom_bar(position = "stack", stat = "identity")
 
 comp1_peak
 
 ```
+
+![peak_dist](figures/peak_dist.png)
 
 ### Identify marker peaks
 
@@ -762,6 +748,8 @@ plotPDF(
 )
 
 ```
+
+![peak_heatmap](figures/peak_heatmap.png)
 
 ## Motif Enrichment
 
@@ -836,6 +824,8 @@ heatmapEM
 
 ```
 
+![motif_heatmap](figures/motif_heatmap.png)
+
 Save your ArchRProject.
 
 ```{r}
@@ -877,3 +867,5 @@ for (i in seq_along(run_ids)){
 ggarrange(plotlist = geneset_plots, ncol = 3, nrow = 1, legend = "right")
 
 ```
+
+![cell_type](figures/cell_type.png)
