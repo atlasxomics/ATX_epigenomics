@@ -25,8 +25,9 @@ tutorials.
 Here we present the analysis of a [spatial
 CUT&Tag](https://www.science.org/doi/10.1126/science.abg7216) experiment
 with triplicate mouse brain sections. The sections were profiled with an
-antibody against **H3K27ac** (activating enhancers and/or promoters).  Analysis for spatial ATAC-seq experiments use similar code for analysis. We
-demonstrate:
+antibody against **H3K27ac** (activating enhancers and/or promoters).
+Analysis for spatial ATAC-seq experiments use similar code for analysis.
+We demonstrate:
 
 -   Creation of an ArchR analysis objects and basic QC
 -   Dimensionality reduction and clustering
@@ -653,19 +654,21 @@ saveArchRProject(
 
 [Pseudo-bulk
 replicates](https://www.archrproject.com/bookdown/making-pseudo-bulk-replicates.html)
-must be created for clusters before peak calling can be performed;
-they are added to the ArchRProject with the `addGroupCoverages()`
-function. [Peak
+must be created for clusters before peak calling can be performed; they
+are added to the ArchRProject with the `addGroupCoverages()` function.
+[Peak
 calling](https://www.archrproject.com/bookdown/calling-peaks-w-macs2.html)
 is performed with MACS2; specifically, we have found **MACS2 v-2.2.6**
 to be compatible with ArchR. The function `findMacs2()` can be used to
-find the path to your MACS2 instillation; if this command fails, set pathToMacs2
-to the _absolute_ path of your local macs2 installation.
+find the path to your MACS2 instillation; if this command fails, set
+pathToMacs2 to the *absolute* path of your local macs2 installation.
 
-We have found that `addReproduciblePeakSet` sometimes fails with a error message
-starting `Error in .safelapply(seq_along(outSummitList), function(i) { :`; if
-this occurs, simply restarting the R session (`.rs.restartR()`) and rerunning
-the command may solve the issue.  This seems to be a bug in ArchR. 
+We have found that `addReproduciblePeakSet` sometimes fails with a error
+message starting
+`Error in .safelapply(seq_along(outSummitList), function(i) { :`; if
+this occurs, simply restarting the R session (`.rs.restartR()`) and
+rerunning the command may solve the issue. This seems to be a bug in
+ArchR.
 
 ```{r}
 
@@ -824,6 +827,9 @@ enrichMotif <- peakAnnoEnrichment(
 ```
 
 ### Plot a heatmap of motifs enriched in marker peaks
+
+The plot will be saved to `ArchRProject/Plots/motifs_heatmap.pdf`; R
+studio can't natively display the plot.
 
 ```{r}
 
