@@ -662,6 +662,11 @@ to be compatible with ArchR. The function `findMacs2()` can be used to
 find the path to your MACS2 instillation; if this command fails, set pathToMacs2
 to the _absolute_ path of your local macs2 installation.
 
+We have found that `addReproduciblePeakSet` sometimes fails with a error message
+starting `Error in .safelapply(seq_along(outSummitList), function(i) { :`; if
+this occurs, simply restarting the R session (`.rs.restartR()`) and rerunning
+the command may solve the issue.  This seems to be a bug in ArchR. 
+
 ```{r}
 
 proj <- addImputeWeights(proj)
@@ -784,7 +789,7 @@ proj <- addMotifAnnotations(
 ### Perform motif enrichment in marker peaks
 
 Compute per-cell deviations across all of our motif annotations using
-the `addDeviationsMatrix()` function
+the `addDeviationsMatrix()` function.
 
 ```{r}
 
