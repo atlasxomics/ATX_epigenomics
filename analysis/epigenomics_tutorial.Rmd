@@ -41,7 +41,7 @@ load required packages.
 
 ```{r message=FALSE}
 
-setwd("~/atlas-git/ATX_ATAC-seq/analysis/") # change to local tutorial directory
+setwd("~/ATX_ATAC-seq/analysis/") # change to local tutorial directory
 
 library(ArchR)
 library(dplyr)
@@ -116,7 +116,7 @@ containing sample info for analysis.
 
 ```{r message=FALSE}
 
-addArchRThreads(threads = 16)
+addArchRThreads(threads = 24)
 addArchRGenome("mm10")
 
 run_ids <- c(
@@ -362,7 +362,7 @@ Plot cluster distribution by sample
 
 ```{r}
 
-df1 <- proj@cellColData
+df1 <- as.data.frame(proj@cellColData)
 n_clusters <- length(unique(proj$Clusters))
 colors <- ArchRPalettes$stallion[as.character(seq_len(n_clusters))]
 names(colors) <- paste0("C", seq_len(n_clusters))
@@ -653,13 +653,14 @@ saveArchRProject(
 
 [Pseudo-bulk
 replicates](https://www.archrproject.com/bookdown/making-pseudo-bulk-replicates.html)
-must be created for our clusters before peak calling can be performed;
+must be created for clusters before peak calling can be performed;
 they are added to the ArchRProject with the `addGroupCoverages()`
 function. [Peak
 calling](https://www.archrproject.com/bookdown/calling-peaks-w-macs2.html)
 is performed with MACS2; specifically, we have found **MACS2 v-2.2.6**
 to be compatible with ArchR. The function `findMacs2()` can be used to
-find the path to your MACS2 instillation.
+find the path to your MACS2 instillation; if this command fails, set pathToMacs2
+to the _absolute_ path of your local macs2 installation.
 
 ```{r}
 
@@ -672,7 +673,7 @@ proj <- addGroupCoverages(
 )
 
 # Set to local macs2 installation
-pathToMacs2 <- findMacs2()
+pathToMacs2 <- "/opt/mamba/envs/jupyterlab/bin/macs2"
 
 proj <- addReproduciblePeakSet(
   ArchRProj = proj,
@@ -831,8 +832,6 @@ plotPDF(
   ArchRProj = proj,
   addDOC = FALSE
 )
-
-heatmapEM
 
 ```
 
