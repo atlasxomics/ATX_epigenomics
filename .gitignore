@@ -9,7 +9,21 @@ fastq2frags/bbmap
 # in/out files, assume 'D' prefix
 fastq2frags/fastqs/D*
 fastq2frags/outputs/D*
+analysis/spatials/
+analysis/fragments/
 
+# ArchR outputs
+analysis/ArchRLogs
+analysis/*.arrow
+analysis/tmp
+analysis/QualityControl
+analysis/ArchRProject
+analysis/.Rhistory
+analysis/CnT_tutorial_files
+analysis/.RDataTmp
+analysis/complete.RData
+analysis/*.csv
+analysis/CnT_tutorial.html
 
 # python stuff
 __pycache__/
