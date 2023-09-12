@@ -24,7 +24,7 @@ cellranger_path = 'cellranger-atac-2.1.0/cellranger-atac'
 
 ############################### WORKFLOW #####################################
 
-samples = os.listdir(fastq_ext)
+samples = [dir for dir in os.listdir(fastq_dir) if not dir.startswith('.')]
 output = [f'{out_dir}/{sample}/complete.txt' for sample in samples]
 
 fastq_paths={}
@@ -68,7 +68,7 @@ rule filter_L1:
     restrictleft=103 \
     skipr1=t \
     hdist=3 \
-    stats={filtered_dir}/{wildcards.sample}_stats.linker1.txt \
+    stats={filtered_dir}/{sample}_stats.linker1.txt \
     threads={cores} \
     literal=GTGGCCGATGTTTCGCATCGGCGTACGACT
     '''
@@ -132,13 +132,13 @@ rule cell_ranger:
   shell:
     '''
     {cellranger_path} count \
-    --id={wildcards.sample} \
+    --id={sample} \
     --reference={ref_dir} \
-    --fastqs={cr_data} \
-    --sample={wildcards.sample} \
+    --fastqs={cr_inputs} \
+    --sample={sample} \
     --localcores={cores_cellRanger} \
     --localmem={mem} \
     --force-cells=2500
-    mv {wildcards.sample} {working_dir}
+    mv {sample} {working_dir}/cellranger_outputs
     touch {output}
     '''
