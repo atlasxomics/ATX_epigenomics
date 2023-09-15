@@ -1,63 +1,39 @@
 """Snakemake pipeline for converting raw fastq data to ATAC-seq fragments
 """
 
-import fnmatch
+import glob
 import os
 
-############################### GLOBALS (CHANGE ME) ##########################
+REF_DIR = 'refdata-cellranger-arc-GRCh38-2020-A-2.0.0'
+FASTQ_DIR = 'fastqs'
+CORES = 32
+CR_CORES = int(CORES * 0.8)
+MEM = 64
 
-ref_dir = 'refdata-cellranger-arc-GRCh38-2020-A-2.0.0' # reference genome
-cores = 32 # threads to use
-cores_cellRanger = int(cores*0.8) # threads to use in Cell Ranger
-mem = 64 # memory to use in Cell Ranger
+samples = os.listdir(FASTQ_DIR)
 
-# input dir, file extension
-fastq_dir = 'fastqs'
-fastq_ext = '.fastq.gz' 
-
-# output directory
-out_dir = 'outputs' 
-
-# software paths
-bbduk_path = 'bbmap/bbduk.sh'
-cellranger_path = 'cellranger-atac-2.1.0/cellranger-atac'
-
-############################### WORKFLOW #####################################
-
-samples = [dir for dir in os.listdir(fastq_dir) if not dir.startswith('.')]
-output = [f'{out_dir}/{sample}/complete.txt' for sample in samples]
-
-fastq_paths={}
 for sample in samples:
-
-    # Make dict of fastq files {sample : (r1, r2)}
-    fastq_paths[sample] = (
-      fnmatch.filter(os.listdir(f'{fastq_dir}/{sample}'), f'*1*{fastq_ext}')[0],
-      fnmatch.filter(os.listdir(f'{fastq_dir}/{sample}'), f'*2*{fastq_ext}')[0]
-    )
-
-    # Make output directories
-    working_dir = f'{out_dir}/{sample}'
+    working_dir = f'output/{sample}'
     filtered_dir = f'{working_dir}/filtered'
     cr_inputs = f'{working_dir}/cellranger_inputs' 
 
     (os.makedirs(dir) for dir in [working_dir, filtered_dir, cr_inputs]
-     if not os.path.exists(dir))
-            
+    if not os.path.exists(dir))
+
 rule all:
   input:
-    output
+    expand('output/{sample}/{sample}/outs', sample=samples)
 
 rule filter_L1:
   input:
-    in1 = lambda wildcards: f'{fastq_dir}/{sample}/{fastq_paths[wildcards.sample][0]}',
-    in2 = lambda wildcards: f'{fastq_dir}/{sample}/{fastq_paths[wildcards.sample][1]}'
+    in1 = lambda wildcards: glob.glob(f'{FASTQ_DIR}/{wildcards.sample}/*R1*fastq.gz')[0],
+    in2 = lambda wildcards: glob.glob(f'{FASTQ_DIR}/{wildcards.sample}/*R2*fastq.gz')[0]
   output:
-    out1 = f'{filtered_dir}/{sample}_linker1_R1.fastq.gz',
-    out2 = f'{filtered_dir}/{sample}_linker1_R2.fastq.gz'
+    out1 = 'output/{sample}/filtered/{sample}_linker1_R1.fastq.gz',
+    out2 = 'output/{sample}/filtered/{sample}_linker1_R2.fastq.gz'
   shell:
     '''
-    {bbduk_path} \
+    bbmap/bbduk.sh \
     in1={input.in1} \
     in2={input.in2} \
     outm1={output.out1} \
@@ -68,21 +44,21 @@ rule filter_L1:
     restrictleft=103 \
     skipr1=t \
     hdist=3 \
-    stats={filtered_dir}/{sample}_stats.linker1.txt \
-    threads={cores} \
+    stats=output/{sample}/filtered/filter_stats.linker1.txt \
+    threads={CORES} \
     literal=GTGGCCGATGTTTCGCATCGGCGTACGACT
     '''
 
 rule filter_L2:
   input:
-    in1 = f'{filtered_dir}/{sample}_linker1_R1.fastq.gz',
-    in2 = f'{filtered_dir}/{sample}_linker1_R2.fastq.gz'
+    in1 = 'output/{sample}/filtered/{sample}_linker1_R1.fastq.gz',
+    in2 = 'output/{sample}/filtered/{sample}_linker1_R2.fastq.gz'
   output:
-    out1 = f'{filtered_dir}/{sample}_linker2_R1.fastq.gz',
-    out2 = f'{filtered_dir}/{sample}_linker2_R2.fastq.gz'
+    out1 = 'output/{sample}/filtered/{sample}_linker2_R1.fastq.gz',
+    out2 = 'output/{sample}/filtered/{sample}_linker2_R2.fastq.gz'
   shell:
     '''
-    {bbduk_path} \
+    bbmap/bbduk.sh \
     in1={input.in1} \
     in2={input.in2} \
     outm1={output.out1} \
@@ -93,17 +69,17 @@ rule filter_L2:
     restrictleft=65 \
     skipr1=t \
     hdist=3 \
-    stats={filtered_dir}/{wildcards.sample}_stats.linker2.txt \
-    threads={cores} \
+    stats=output/{sample}/filtered/filter_stats.linker2.txt \
+    threads={CORES} \
     literal=ATCCACGTGCTTGAGAGGCCAGAGCATTCG
     '''
 
 rule split_r2:
   input:
-    f'{filtered_dir}/{sample}_linker2_R2.fastq.gz'
+    input = 'output/{sample}/filtered/{sample}_linker2_R2.fastq.gz'
   output:
-    out1 = f'{cr_inputs}/{sample}_S1_L001_R3_001.fastq',
-    out2 = f'{cr_inputs}/{sample}_S1_L001_R2_001.fastq'
+    out1 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R3_001.fastq',
+    out2 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R2_001.fastq'
   shell:
     '''
     python split_r2.py \
@@ -114,9 +90,9 @@ rule split_r2:
 
 rule R1_rename: 
   input:
-    f'{filtered_dir}/{sample}_linker2_R1.fastq.gz'
+    input = 'output/{sample}/filtered/{sample}_linker2_R1.fastq.gz'
   output:
-    f'{cr_inputs}/{sample}_S1_L001_R1_001.fastq.gz'
+    output = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R1_001.fastq.gz'
   shell:
     '''
     cp {input} {output}
@@ -124,21 +100,22 @@ rule R1_rename:
 
 rule cell_ranger:
   input:
-    in1 = f'{cr_inputs}/{sample}_S1_L001_R1_001.fastq.gz',
-    in2 = f'{cr_inputs}/{sample}_S1_L001_R2_001.fastq',
-    in3 = f'{cr_inputs}/{sample}_S1_L001_R3_001.fastq'
+    in1 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R1_001.fastq.gz',
+    in2 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R2_001.fastq',
+    in3 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R3_001.fastq'
   output:
-    f'{working_dir}/complete.txt'
+    directory('output/{sample}/{sample}/outs')
+  params:
+    ref_dir = REF_DIR
   shell:
     '''
-    {cellranger_path} count \
+    cellranger-atac-2.1.0/cellranger-atac count \
     --id={sample} \
-    --reference={ref_dir} \
-    --fastqs={cr_inputs} \
+    --reference={params.ref_dir} \
+    --fastqs=output/{sample}/cellranger_inputs/ \
     --sample={sample} \
-    --localcores={cores_cellRanger} \
-    --localmem={mem} \
+    --localcores={CR_CORES} \
+    --localmem={MEM} \
     --force-cells=2500
-    mv {sample} {working_dir}/cellranger_outputs
-    touch {output}
-    '''
+    mv {sample} output/{sample}/
+  '''
