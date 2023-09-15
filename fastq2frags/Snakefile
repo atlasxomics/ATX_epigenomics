@@ -1,8 +1,14 @@
+"""Snakemake pipeline for converting raw fastq data to ATAC-seq fragments
+"""
+
 import glob
 import os
 
 REF_DIR = 'refdata-cellranger-arc-GRCh38-2020-A-2.0.0'
 FASTQ_DIR = 'fastqs'
+CORES = 32
+CR_CORES = int(CORES * 0.8)
+MEM = 64
 
 samples = os.listdir(FASTQ_DIR)
 
@@ -16,7 +22,7 @@ for sample in samples:
 
 rule all:
   input:
-    expand('output/{sample}/{sample}/outs', sample=os.listdir(samples))
+    expand('output/{sample}/{sample}/outs', sample=samples)
 
 rule filter_L1:
   input:
@@ -39,7 +45,7 @@ rule filter_L1:
     skipr1=t \
     hdist=3 \
     stats=output/{sample}/filtered/filter_stats.linker1.txt \
-    threads=32 \
+    threads={CORES} \
     literal=GTGGCCGATGTTTCGCATCGGCGTACGACT
     '''
 
@@ -64,7 +70,7 @@ rule filter_L2:
     skipr1=t \
     hdist=3 \
     stats=output/{sample}/filtered/filter_stats.linker2.txt \
-    threads=32 \
+    threads={CORES} \
     literal=ATCCACGTGCTTGAGAGGCCAGAGCATTCG
     '''
 
@@ -108,9 +114,8 @@ rule cell_ranger:
     --reference={params.ref_dir} \
     --fastqs=output/{sample}/cellranger_inputs/ \
     --sample={sample} \
-    --localcores=25 \
-    --localmem=64 \
+    --localcores={CR_CORES} \
+    --localmem={MEM} \
     --force-cells=2500
     mv {sample} output/{sample}/
   '''
-
