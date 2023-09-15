@@ -25,8 +25,9 @@ tutorials.
 Here we present the analysis of a [spatial
 CUT&Tag](https://www.science.org/doi/10.1126/science.abg7216) experiment
 with triplicate mouse brain sections. The sections were profiled with an
-antibody against **H3K27ac** (activating enhancers and/or promoters).  Analysis for spatial ATAC-seq experiments use similar code for analysis. We
-demonstrate:
+antibody against **H3K27ac** (activating enhancers and/or promoters).
+Analysis for spatial ATAC-seq experiments use similar code for analysis.
+We demonstrate:
 
 -   Creation of an ArchR analysis objects and basic QC
 -   Dimensionality reduction and clustering
@@ -41,7 +42,7 @@ load required packages.
 
 ```{r message=FALSE}
 
-setwd("~/atlas-git/ATX_ATAC-seq/analysis/") # change to local tutorial directory
+setwd("~/ATX_ATAC-seq/analysis/") # change to local tutorial directory
 
 library(ArchR)
 library(dplyr)
@@ -116,7 +117,7 @@ containing sample info for analysis.
 
 ```{r message=FALSE}
 
-addArchRThreads(threads = 16)
+addArchRThreads(threads = 24)
 addArchRGenome("mm10")
 
 run_ids <- c(
@@ -362,7 +363,7 @@ Plot cluster distribution by sample
 
 ```{r}
 
-df1 <- proj@cellColData
+df1 <- as.data.frame(proj@cellColData)
 n_clusters <- length(unique(proj$Clusters))
 colors <- ArchRPalettes$stallion[as.character(seq_len(n_clusters))]
 names(colors) <- paste0("C", seq_len(n_clusters))
@@ -653,13 +654,21 @@ saveArchRProject(
 
 [Pseudo-bulk
 replicates](https://www.archrproject.com/bookdown/making-pseudo-bulk-replicates.html)
-must be created for our clusters before peak calling can be performed;
-they are added to the ArchRProject with the `addGroupCoverages()`
-function. [Peak
+must be created for clusters before peak calling can be performed; they
+are added to the ArchRProject with the `addGroupCoverages()` function.
+[Peak
 calling](https://www.archrproject.com/bookdown/calling-peaks-w-macs2.html)
 is performed with MACS2; specifically, we have found **MACS2 v-2.2.6**
 to be compatible with ArchR. The function `findMacs2()` can be used to
-find the path to your MACS2 instillation.
+find the path to your MACS2 instillation; if this command fails, set
+pathToMacs2 to the *absolute* path of your local macs2 installation.
+
+We have found that `addReproduciblePeakSet` sometimes fails with a error
+message starting
+`Error in .safelapply(seq_along(outSummitList), function(i) { :`; if
+this occurs, simply restarting the R session (`.rs.restartR()`) and
+rerunning the command may solve the issue. This seems to be a bug in
+ArchR.
 
 ```{r}
 
@@ -672,7 +681,7 @@ proj <- addGroupCoverages(
 )
 
 # Set to local macs2 installation
-pathToMacs2 <- findMacs2()
+pathToMacs2 <- "/opt/mamba/envs/jupyterlab/bin/macs2"
 
 proj <- addReproduciblePeakSet(
   ArchRProj = proj,
@@ -783,7 +792,7 @@ proj <- addMotifAnnotations(
 ### Perform motif enrichment in marker peaks
 
 Compute per-cell deviations across all of our motif annotations using
-the `addDeviationsMatrix()` function
+the `addDeviationsMatrix()` function.
 
 ```{r}
 
@@ -819,6 +828,9 @@ enrichMotif <- peakAnnoEnrichment(
 
 ### Plot a heatmap of motifs enriched in marker peaks
 
+The plot will be saved to `ArchRProject/Plots/motifs_heatmap.pdf`; R
+studio can't natively display the plot.
+
 ```{r}
 
 heatmapEM <- plotEnrichHeatmap(enrichMotif, n = 7, transpose = TRUE)
@@ -831,8 +843,6 @@ plotPDF(
   ArchRProj = proj,
   addDOC = FALSE
 )
-
-heatmapEM
 
 ```
 
