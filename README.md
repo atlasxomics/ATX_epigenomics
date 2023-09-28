@@ -21,14 +21,10 @@ This repository contains the  scripts necessary to analyze data from ATAC DBIT-s
 **preprocessing** contains a scATAC-seq analysis pipeline built using [snakemake](https://bitbucket.org/snakemake/snakemake/wiki/Home); raw fastq files are uploaded directly to this directory for processing.  The pipeline is composed following steps,
 
 - reads are filtered on the correctness of ligation linker sequences;
-- read2 is split into two read files ('new' read2, read3);
-- alignment is performed with Cell Ranger ATAC;
+- alignment and preprocessing is performed with [Chromap](https://www.nature.com/articles/s41467-021-26865-w);
+- BED output files are converted into fragment.tsv.gz files for downstream analysis.
 
-Cell Ranger ATAC outputs fragment files that are used for downstream analysis.
-
-> Due to the [system requirements](https://support.10xgenomics.com/single-cell-atac/software/overview/system-requirements) of Cell Ranger ATAC, the pipeline must be run in a Linux environment with at least 64GB RAM, an 8-core Intel or AMD processor, and 1TB of free disk space; we recommend running this pipeline in an AWS EC2 instance.
-
-<br>
+> We recommend running the pipeline in a Linux environment with at least 64GB RAM, an 8-core Intel or AMD processor, and 1TB of free disk space; here, we provide instructions for running in an AWS EC2 instance.
 
 **analysis** contains R scripts and vignettes for further analysis of ATAC DBIT-seq experiments.  The scripts use the [ArchR](https://www.nature.com/articles/s41588-021-00790-6) package for dimensionality reduction, clustering, peak calling, and differential accessibility analysis and [Seurat](https://www.cell.com/cell/fulltext/S0092-8674(21)00583-3?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS0092867421005833%3Fshowall%3Dtrue) for incorporation of spatial data.
 
@@ -40,9 +36,11 @@ Deng, Y., Bartosovic, M., Ma, S. et al. Spatial profiling of chromatin accessibi
 
 Liu, Y., DiStasio, M., Su, G. et al. High-plex protein and whole transcriptome co-mapping at cellular resolution with spatial CITE-seq. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-023-01676-0
 
-Yanxiang Deng et al. ,Spatial-CUT&Tag: Spatially resolved chromatin modification profiling at the cellular level.Science375,681-686(2022). DOI:10.1126/science.abg7216
+Yanxiang Deng et al. Spatial-CUT&Tag: Spatially resolved chromatin modification profiling at the cellular level.Science375,681-686(2022). DOI:10.1126/science.abg7216
 
 Liu et al. High-Spatial-Resolution Multi-Omics Sequencing via Deterministic Barcoding in Tissue Cell. 183, 1665–1681 (2020). https://doi.org/10.1016/j.cell.2020.10.026
+
+Zhang, H., Song, L., Wang, X. et al. Fast alignment and preprocessing of chromatin profiles with Chromap. Nat Commun 12, 6566 (2021). https://doi.org/10.1038/s41467-021-26865-w
 
 Granja, J.M., Corces, M.R., Pierce, S.E. et al. ArchR is a scalable software package for integrative single-cell chromatin accessibility analysis. Nat Genet 53, 403–411 (2021). https://doi.org/10.1038/s41588-021-00790-6
 

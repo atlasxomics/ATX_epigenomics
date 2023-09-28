@@ -4,33 +4,22 @@
 import glob
 import os
 
-REF_DIR = 'refdata-cellranger-arc-GRCh38-2020-A-2.0.0'
+REF_DIR = 'Refdata_scATAC_MAESTRO_GRCh38_1.1.0'
 FASTQ_DIR = 'fastqs'
+BARCODE_FILE = 'bc50.txt.gz'
 CORES = 32
-CR_CORES = int(CORES * 0.8)
-MEM = 64
-
-samples = os.listdir(FASTQ_DIR)
-
-for sample in samples:
-    working_dir = f'output/{sample}'
-    filtered_dir = f'{working_dir}/filtered'
-    cr_inputs = f'{working_dir}/cellranger_inputs' 
-
-    (os.makedirs(dir) for dir in [working_dir, filtered_dir, cr_inputs]
-    if not os.path.exists(dir))
 
 rule all:
   input:
-    expand('output/{sample}/{sample}/outs', sample=samples)
+    expand('{sample}_fragments.tsv.gz', sample=os.listdir(FASTQ_DIR))
 
 rule filter_L1:
   input:
     in1 = lambda wildcards: glob.glob(f'{FASTQ_DIR}/{wildcards.sample}/*R1*fastq.gz')[0],
     in2 = lambda wildcards: glob.glob(f'{FASTQ_DIR}/{wildcards.sample}/*R2*fastq.gz')[0]
   output:
-    out1 = 'output/{sample}/filtered/{sample}_linker1_R1.fastq.gz',
-    out2 = 'output/{sample}/filtered/{sample}_linker1_R2.fastq.gz'
+    out1 = '{sample}_linker1_R1.fastq.gz',
+    out2 = '{sample}_linker1_R2.fastq.gz'
   shell:
     '''
     bbmap/bbduk.sh \
@@ -44,18 +33,18 @@ rule filter_L1:
     restrictleft=103 \
     skipr1=t \
     hdist=3 \
-    stats=output/{sample}/filtered/filter_stats.linker1.txt \
+    stats={wildcards.sample}_stats.linker1.txt \
     threads={CORES} \
     literal=GTGGCCGATGTTTCGCATCGGCGTACGACT
     '''
 
 rule filter_L2:
   input:
-    in1 = 'output/{sample}/filtered/{sample}_linker1_R1.fastq.gz',
-    in2 = 'output/{sample}/filtered/{sample}_linker1_R2.fastq.gz'
+    in1 = '{sample}_linker1_R1.fastq.gz',
+    in2 = '{sample}_linker1_R2.fastq.gz'
   output:
-    out1 = 'output/{sample}/filtered/{sample}_linker2_R1.fastq.gz',
-    out2 = 'output/{sample}/filtered/{sample}_linker2_R2.fastq.gz'
+    out1 = '{sample}_linker2_R1.fastq.gz',
+    out2 = '{sample}_linker2_R2.fastq.gz'
   shell:
     '''
     bbmap/bbduk.sh \
@@ -69,53 +58,43 @@ rule filter_L2:
     restrictleft=65 \
     skipr1=t \
     hdist=3 \
-    stats=output/{sample}/filtered/filter_stats.linker2.txt \
+    stats={wildcards.sample}_stats.linker2.txt \
     threads={CORES} \
     literal=ATCCACGTGCTTGAGAGGCCAGAGCATTCG
     '''
 
-rule split_r2:
+rule chromap:
   input:
-    input = 'output/{sample}/filtered/{sample}_linker2_R2.fastq.gz'
+    in1 = '{sample}_linker2_R1.fastq.gz',
+    in2 = '{sample}_linker2_R2.fastq.gz'
   output:
-    out1 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R3_001.fastq',
-    out2 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R2_001.fastq'
-  shell:
-    '''
-    python split_r2.py \
-    --input {input} \
-    --output_R3 {output.out1} \
-    --output_R2 {output.out2}
-    '''
-
-rule R1_rename: 
-  input:
-    input = 'output/{sample}/filtered/{sample}_linker2_R1.fastq.gz'
-  output:
-    output = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R1_001.fastq.gz'
-  shell:
-    '''
-    cp {input} {output}
-    '''
-
-rule cell_ranger:
-  input:
-    in1 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R1_001.fastq.gz',
-    in2 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R2_001.fastq',
-    in3 = 'output/{sample}/cellranger_inputs/{sample}_S1_L001_R3_001.fastq'
-  output:
-    directory('output/{sample}/{sample}/outs')
+    '{sample}_aln.bed'
   params:
-    ref_dir = REF_DIR
+    ref_dir = REF_DIR,
+    barcodes = BARCODE_FILE
   shell:
     '''
-    cellranger-atac-2.1.0/cellranger-atac count \
-    --id={sample} \
-    --reference={params.ref_dir} \
-    --fastqs=output/{sample}/cellranger_inputs/ \
-    --sample={sample} \
-    --localcores={CR_CORES} \
-    --localmem={MEM} \
-    --force-cells=2500
-    mv {sample} output/{sample}/
-  '''
+    chromap/chromap \
+      -t {CORES} \
+      --preset atac \
+      -x {params.ref_dir}/GRCh38_genome.index \
+      -r {params.ref_dir}/GRCh38_genome.fa \
+      -1 {input.in1} \
+      -2 {input.in2} \
+      -o {wildcards.sample}_aln.bed \
+      -b {input.in2} \
+      --barcode-whitelist {params.barcodes} \
+      --read-format bc:22:29,bc:60:67,r1:0:-1,r2:117:-1
+    '''
+
+rule bed2fragment:
+  input:
+    '{sample}_aln.bed'
+  output:
+    '{sample}_fragments.tsv.gz'
+  shell:
+    '''	
+    awk 'BEGIN{{FS=OFS=" "}}{{$4=$4"-1"}}4' {input} > {wildcards.sample}_temp.bed
+    sed 's/ /\t/g' {wildcards.sample}_temp.bed > {wildcards.sample}_fragments.tsv
+    bgzip -c {wildcards.sample}_fragments.tsv > {output}
+    '''
