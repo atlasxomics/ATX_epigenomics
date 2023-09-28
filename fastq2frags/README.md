@@ -19,7 +19,7 @@ The fastq2frags pipeline requires the barcoding schema described in [Zhang et al
 ## setting up the environment
 The ‘fastq2frags' pipeline can be run in an AWS EC2 instance or other cloud computing resource.  We developed the pipeline in an EC2 instance running Red Hat Enterprise Linux 9 (RHEL 9) with 32 cores and 64GB of RAM (ami-08e637cea2f053dfa).  The pipeline requires at least 1 TB free of free disk space.  See below for instructions for setting up an environment for fastq2frags in RHEL 9.
 
-> For an example of running the pipeline in a high performance cluster (HPC) see [here](https://github.com/di-0579/Spatial_epigenome-transcriptome_co-sequencing/tree/main/Data_preprocessing/Spatial-ATAC-seq).
+> For an example of running the pipeline in a high-performance cluster (HPC) see [here](https://github.com/di-0579/Spatial_epigenome-transcriptome_co-sequencing/tree/main/Data_preprocessing/Spatial-ATAC-seq).
 
 1. Install `git` and set up ssh [access](https://www.theodinproject.com/lessons/foundations-setting-up-git).
     ```
@@ -63,7 +63,7 @@ email (support@atlasxomics.com).
     bash Mambaforge-Linux-x86_64.sh
     ```
 
-9. Install [snakemake](https://snakemake.readthedocs.io/en/stable/index.html) into a new conda enviroment.
+9. Install [snakemake](https://snakemake.readthedocs.io/en/stable/index.html) into a new conda environment.
     ```
     conda activate base
     mamba create -c conda-forge -c bioconda -n snakemake snakemake
@@ -90,7 +90,7 @@ When the environment has been correctly setup, the fastq2frags directory should 
 * Check that `BARCODE_FILE` points to the correct .txt.gz barcode 'whitelist' file.  Use bc50.txt.gz or bc96.txt.gz for 50-channel and 96-channel chips, respectively.
 * Check that `CORES` contains the correct number of available cores for the pipeline.  Here, we set the value to 32.
 
-4. Activate the snakemake environment and run the workflow.  The parameter -c can be set the a specificed number of cores (ie. 32); see snakemake [docs](https://snakemake.readthedocs.io/en/stable/executing/cli.html#command-line-interface).
+4. Activate the snakemake environment and run the workflow.  The parameter -c can be set a specified number of cores (ie. 32); see snakemake [docs](https://snakemake.readthedocs.io/en/stable/executing/cli.html#command-line-interface).
     ```
     conda activate snakemake
     snakemake -c

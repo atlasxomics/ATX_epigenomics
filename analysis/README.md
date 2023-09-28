@@ -4,7 +4,7 @@ This repository contains R Markdown tutorials for the analysis of spatial
 ATAC-seq data generated via DBIT-seq.
 
 These tutorials assume you have created fragments files from a epigenomic 
-alignment and preprocessing pipeline (ie.[Chromap](https://www.nature.com/articles/s41467-021-26865-w)),
+alignment and preprocessing pipeline (ie. [Chromap](https://www.nature.com/articles/s41467-021-26865-w)),
 and 'spatial' folders via our [AtlasXBrowser](https://docs.atlasxomics.com/projects/AtlasXbrowser/en/latest/Overview.html)
 software.  For our custom alignment and preprocessing workflow, see `fastq2frags/` in
 this repository. 
