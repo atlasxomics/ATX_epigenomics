@@ -15,8 +15,7 @@ tutorials.
 Here we present the analysis of a [spatial
 CUT&Tag](https://www.science.org/doi/10.1126/science.abg7216) experiment
 with triplicate mouse brain sections. The sections were profiled with an
-antibody against **H3K27ac** (activating enhancers and/or promoters).  Analysis
-for spatial ATAC-seq experiments use similar code for analysis. We demonstrate:
+antibody against **H3K27ac**.  H3K27ac is a histone modification associated with increased transcription and is recognized as an active enhancer mark. Analysis for spatial ATAC-seq experiments use similar code for analysis. We demonstrate:
 
 -   Creation of an ArchR analysis objects and basic QC
 -   Dimensionality reduction and clustering
@@ -247,6 +246,12 @@ p1 + p2
 
 ## Dimensionality reduction and clustering
 
+Here, we perform unbiased clustering of cells and neighborhoods by similar
+epigenetic features. Cell types, along with their location in tissue, can be 
+identified by associating these groups with well-characterized marker gene(s).
+Spatial epigenomics can reveal discreet populations of cells and tissue
+heterogeneity purely through epigenetic signatures.
+
 Due to the sparsity of scATAC-seq data, ArchR
 [recommends](https://www.archrproject.com/bookdown/dimensionality-reduction-with-archr.html)
 using Latent Semantic Indexing (LSI) to first reduce the dimensions of
@@ -302,7 +307,12 @@ proj <- addUMAP(
 
 ### Plot UMAP and cluster distribution
 
-The UMAP can be visualized and colored by sample and clusters.
+We can identify unique cell epigenetic signatures by clustering and identifying
+the distribution of accessible regulatory elements. This allows for the analysis
+of widespread changes to the chromatin that impact gene regulation based on a
+cell cluster’s local environment.
+
+Below we plot the UMAP and color by either Sample or cluster identity.
 
 ```{r}
 
@@ -328,7 +338,8 @@ p1 + p2
 
 ![umap](figures/umap.png){width="2550"}
 
-Plot cluster distribution by sample
+Below, we plot the distribution of regulatory elements by distal, promoter,
+intronic and exonic regions in each cluster.
 
 ```{r}
 
@@ -374,6 +385,8 @@ saveArchRProject(
 
 ### Build SeuratObjects
 
+To visualize our data spatially, we must create SeuratObjects.
+
 First, we create a new data frame from the ArchRProject cellColData
 matrix. This data frame will be used for the `meta.data` parameter of
 the `CreateSeuratObject`
@@ -392,7 +405,7 @@ metadata$log10_nFrags <- log(metadata$nFrags)
 
 ```
 
-Create a gene matrix for Seurat object.
+Next, we create a gene matrix for the SeuratObject.
 
 ```{r}
 
@@ -410,7 +423,8 @@ rownames(matrix) <- gene_matrix@elementMetadata$name
 
 ```
 
-Build SeuratObjects with `build_atlas_seurat_object()` from utils.R
+Finally, we build the SeuratObjects with `build_atlas_seurat_object()` from
+utils.R
 
 ```{r}
 
@@ -430,10 +444,13 @@ for (i in seq_along(run_ids)) {
 
 ### Spatial cluster plots
 
-Plot the clusters identities of each tixel overlaid on top of the tissue
-image with `spatial_plot()` from utils.R; this functions call the Seurat
-function
-[SpatialDimPlot](https://satijalab.org/seurat/reference/spatialplot).
+With the SeuratObjects, we can generate a spatial map of the mouse hippocampus
+showing the categorization of each tissue region into distinct clusters, which
+loosely show the distribution of putative cell types across the tissue.
+
+Below, we plot the clusters identities of each tixel overlaid on top of the
+tissue image with `spatial_plot()` from utils.R; this functions calls the Seurat
+function [SpatialDimPlot](https://satijalab.org/seurat/reference/spatialplot).
 
 ```{r}
 
@@ -458,7 +475,7 @@ ggarrange(
 ### Spatial QC plots
 
 Plot qc metrics of each tixel overlaid on top of the tissue image with
-`feature_plot()` from utils.R; this functions call the Seurat function
+`feature_plot()` from utils.R; this function calls the Seurat function
 [SpatialFeaturePlot](https://satijalab.org/seurat/reference/spatialplot).
 QC metrics to plot include:
 
@@ -484,6 +501,16 @@ ggarrange(plotlist = spatial_qc_plots, ncol = 3, nrow = 1, legend = "right")
 
 ### Spatial genes plots
 
+Similar to gene expression levels in a transcriptomic assay, ArchR uses gene
+activity scores that incorporate accessibility of both the gene body and distal
+regulatory elements are used to rank genes by epigenetic activity.
+Combined with spatial information, these scores can be used to visualize the
+regulatory landscape of a gene of interest in the original tissue context.
+
+Here, we create a spatial heatmap of the gene activity score for Opalin, a marker
+gene for oligodendrocyte cells, across three spatial H3K27ac CUT&Tag replicates.
+
+
 ```{r}
 
 gene <- "Opalin"
@@ -504,7 +531,11 @@ ggarrange(plotlist = spatial_gene_plots, ncol = 3, nrow = 1, legend = "right")
 
 ### Identify marker genes
 
-Extract [gene
+Identifying statistically significant gene activity between clusters of distinct
+epigenetic signatures can provide a new understanding of the biological mechanisms
+underlying tissue morphology.
+
+Below, we extract [gene
 scores](https://www.archrproject.com/bookdown/gene-scores-and-marker-genes-with-archr.html)
 and identify marker genes with thresholds **FDR \<= 0.05, Log2FC \>=
 0.2**. `getMarkerFeatures()` returns a `SummarizedExperiment` object for
@@ -528,8 +559,9 @@ write.csv(markerList, file = "markerList.csv", row.names = FALSE)
 
 ### Marker gene heatmaps
 
-A heatmap of all marker genes by cluster can be plotted with
-plotMarkerHeatmap.
+A clustered heat map of spatially differentiated gene activity scores can be
+used to identify putative cell types.  Below, we plot a  heatmap of all marker
+genes by cluster can be plotted with plotMarkerHeatmap().
 
 ```{r}
 
@@ -585,7 +617,7 @@ heatmap(
 
 ### Genome tracks of marker genes
 
-Local chromatin accessablity can be plotted against [genome browser
+Local chromatin accessibility can be plotted against [genome browser
 tracks](https://www.archrproject.com/bookdown/track-plotting-with-archrbrowser.html).
 Here, we plot all genes in `marker_genes_subset` and save them as PDF in
 the ArchRProject/Plots directory.
@@ -612,6 +644,11 @@ plotPDF(
 ```
 
 `grid` can be used to plot specific genes from the list.
+
+Below, we plot the browser track visualizing potential regulatory elements around
+the Olig1 gene (a marker for oligodendrocytes). In spatial ATAC-seq, peaks
+represent open chromatin; in spatial CUT&Tag, peaks represent genome regions with
+a specific histone modification.
 
 ```{r}
 
@@ -754,8 +791,7 @@ plotPDF(
 ## Motif Enrichment
 
 [Motif
-annotations](https://www.archrproject.com/bookdown/motif-enrichment-in-differential-peaks.html)
-can be added to an ArchRProject with `addMotifAnnotations()`.
+annotations](https://www.archrproject.com/bookdown/motif-enrichment-in-differential-peaks.html) can be added to an ArchRProject with `addMotifAnnotations()`.
 
 ```{r}
 
@@ -807,6 +843,9 @@ enrichMotif <- peakAnnoEnrichment(
 
 ### Plot a heatmap of motifs enriched in marker peaks
 
+Here, we plot the differential regulatory elements associated with each
+cluster.
+
 ```{r}
 
 heatmapEM <- plotEnrichHeatmap(enrichMotif, n = 7, transpose = TRUE)
@@ -839,7 +878,14 @@ saveArchRProject(
 
 ## Approximate cell typing
 
-<https://satijalab.org/seurat/reference/addmodulescore>
+Cell types, along with their location in tissue, can then be identified by
+associating these the tissue with well-characterized marker gene(s).
+
+Here, we utilize the Seurat function
+[`addModuleScore`](https://satijalab.org/seurat/reference/addmodulescore)
+to plot the combined expression of marker genes over tissue.  We plot the
+oligodendrocyte module score based on a combination of associated marker genes
+(Mbp, Opalin, Mog, Mobp, Cspg4, Cldn11).
 
 Marker genes:
 
