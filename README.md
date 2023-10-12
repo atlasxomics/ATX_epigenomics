@@ -2,7 +2,7 @@
 
 ![data](static/data.png)
 
-# Spatial profiling of epigenomics via DBIT-seq
+# Spatial profiling of chromatin modification via DBIT-seq
 
 </div> 
 
