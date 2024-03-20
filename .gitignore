@@ -17,7 +17,7 @@ analysis/ArchRLogs
 analysis/*.arrow
 analysis/tmp
 analysis/QualityControl
-analysis/ArchRProject
+analysis/*ArchRProject*
 analysis/.Rhistory
 analysis/CnT_tutorial_files
 analysis/.RDataTmp

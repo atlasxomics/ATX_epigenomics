@@ -11,7 +11,6 @@ build_atlas_seurat_object <- function(
     spatial_path) {
   # Prepare and combine gene matrix, metadata, and image for SeuratObject
   # for runs within a project.
-
   image <- Read10X_Image(
     image.dir = spatial_path,
     filter.matrix = TRUE
@@ -20,6 +19,7 @@ build_atlas_seurat_object <- function(
 
   matrix <- matrix[, c(grep(pattern = run_id, colnames(matrix)))]
   matrix@Dimnames[[2]] <- metadata@rownames
+  matrix <- CreateAssayObject(matrix)
 
   object <- CreateSeuratObject(
     counts = matrix,

@@ -674,13 +674,24 @@ saveArchRProject(
 
 [Pseudo-bulk
 replicates](https://www.archrproject.com/bookdown/making-pseudo-bulk-replicates.html)
-must be created for our clusters before peak calling can be performed;
-they are added to the ArchRProject with the `addGroupCoverages()`
-function. [Peak
+must be created for clusters before peak calling can be performed; they
+are added to the ArchRProject with the `addGroupCoverages()` function.
+[Peak
 calling](https://www.archrproject.com/bookdown/calling-peaks-w-macs2.html)
 is performed with MACS2; specifically, we have found **MACS2 v-2.2.6**
 to be compatible with ArchR. The function `findMacs2()` can be used to
-find the path to your MACS2 instillation.
+find the path to your MACS2 instillation; if this command fails, set
+pathToMacs2 to the *absolute* path of your local macs2 installation.
+
+If you get an Error in h5checktypeOrOpenLoc error when running
+addGroupCoverages, you may have to set the threads parameter to 1.
+
+We have found that `addReproduciblePeakSet` sometimes fails with a error
+message starting
+`Error in .safelapply(seq_along(outSummitList), function(i) { :`; if
+this occurs, simply restarting the R session (`.rs.restartR()`) and
+rerunning the command may solve the issue. This seems to be a bug in
+ArchR.
 
 ```{r}
 
@@ -773,7 +784,9 @@ heatmap_peaks <- plotMarkerHeatmap(
   transpose = TRUE
 )
 
-draw(heatmap_peaks, heatmap_legend_side = "top", show_heatmap_legend = FALSE)
+ComplexHeatmap::draw(
+  heatmap_peaks, heatmap_legend_side = "top", show_heatmap_legend = FALSE
+)
 
 plotPDF(
   heatmap_peaks,

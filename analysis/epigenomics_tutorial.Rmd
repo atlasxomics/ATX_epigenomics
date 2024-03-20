@@ -700,6 +700,9 @@ to be compatible with ArchR. The function `findMacs2()` can be used to
 find the path to your MACS2 instillation; if this command fails, set
 pathToMacs2 to the *absolute* path of your local macs2 installation.
 
+If you get an Error in h5checktypeOrOpenLoc error when running
+addGroupCoverages, you may have to set the threads parameter to 1.
+
 We have found that `addReproduciblePeakSet` sometimes fails with a error
 message starting
 `Error in .safelapply(seq_along(outSummitList), function(i) { :`; if
@@ -773,7 +776,7 @@ write.csv(
 )
 
 # Collect data with annotations
-peak_data = data.frame(proj@peakSet@ranges, proj@peakSet@elementMetadata)
+peak_data <- data.frame(proj@peakSet@ranges, proj@peakSet@elementMetadata)
 total <- merge(peak_data, markerpeakList, by = c("start", "end"))
 
 write.csv(
@@ -796,7 +799,9 @@ heatmap_peaks <- plotMarkerHeatmap(
   transpose = TRUE
 )
 
-draw(heatmap_peaks, heatmap_legend_side = "top", show_heatmap_legend = FALSE)
+ComplexHeatmap::draw(
+  heatmap_peaks, heatmap_legend_side = "top", show_heatmap_legend = FALSE
+)
 
 plotPDF(
   heatmap_peaks,
