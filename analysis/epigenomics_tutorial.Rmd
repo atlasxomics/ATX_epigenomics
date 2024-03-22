@@ -42,9 +42,10 @@ load required packages.
 
 ```{r message=FALSE}
 
-setwd("~/ATX_ATAC-seq/analysis/") # change to local tutorial directory
+setwd("~/ATX_epigenomics/analysis/") # change to local tutorial directory
 
 library(ArchR)
+library(BSgenome.Mmusculus.UCSC.mm10)
 library(dplyr)
 library(ggpubr)
 library(grid)
