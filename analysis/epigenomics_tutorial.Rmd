@@ -837,6 +837,17 @@ proj <- addMotifAnnotations(
 Compute per-cell deviations across all of our motif annotations using
 the `addDeviationsMatrix()` function.
 
+WARNING: `addDeviationsMatrix` may error out with traceback pointing to missing 
+variable in the `Matrix` or `irlba` packages.  To handle these bugs, you can
+uninstall `Matrix` and `irlba` and then re-install from source.
+```
+renv::purge("Matrix")
+renv::purge("irlba")
+renv::install("Matrix@1.6-1", type = "source")
+renv::install("irlba", type = "source")
+```
+Once the package are re-installed, you must restart your R session.
+
 ```{r}
 
 proj <- addDeviationsMatrix(
