@@ -830,7 +830,7 @@
     },
     "Seurat": {
       "Package": "Seurat",
-      "Version": "4.3.0.1",
+      "Version": "4.3.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
