@@ -281,11 +281,12 @@ p1 + p2
 
 ## Dimensionality reduction and clustering
 
-Here, we perform unbiased clustering of cells and neighborhoods by similar
-epigenetic features. Cell types, along with their location in tissue, can be
-identified by associating these groups with well-characterized marker gene(s).
-Spatial epigenomics can reveal discreet populations of cells and tissue
-heterogeneity purely through epigenetic signatures.
+Here, we perform unbiased clustering of cells and neighborhoods by
+similar epigenetic features. Cell types, along with their location in
+tissue, can be identified by associating these groups with
+well-characterized marker gene(s). Spatial epigenomics can reveal
+discreet populations of cells and tissue heterogeneity purely through
+epigenetic signatures.
 
 Due to the sparsity of scATAC-seq data, ArchR
 [recommends](https://www.archrproject.com/bookdown/dimensionality-reduction-with-archr.html)
@@ -293,6 +294,20 @@ using Latent Semantic Indexing (LSI) to first reduce the dimensions of
 the insertion count matrix (TileMatrix) described above). The reduced
 matrix can then be visualized with a conventional dimensionality
 reduction technique (ie. UMAP, t-SNE).
+
+> WARNING: `addIterativeLSI` may error out with traceback pointing to
+> missing variable in the `Matrix` or `irlba` packages. To handle these
+> bugs, you can uninstall `Matrix` and `irlba` and then re-install from
+> source.
+
+ ```         
+ renv::purge("Matrix")
+ renv::purge("irlba")
+ renv::install("Matrix@1.6-1", type = "source")
+ renv::install("irlba", type = "source")
+ ```
+ 
+> Once the package are re-installed, you must restart your R session.
 
 ```{r message=FALSE}
 
@@ -342,10 +357,10 @@ proj <- addUMAP(
 
 ### Plot UMAP and cluster distribution
 
- We can identify unique cell epigenetic signatures by clustering and identifying
-the distribution of accessible regulatory elements. This allows for the analysis
-of widespread changes to the chromatin that impact gene regulation based on a
-cell cluster’s local environment.
+We can identify unique cell epigenetic signatures by clustering and
+identifying the distribution of accessible regulatory elements. This
+allows for the analysis of widespread changes to the chromatin that
+impact gene regulation based on a cell cluster’s local environment.
 
 Below we plot the UMAP and color by either Sample or cluster identity.
 
@@ -371,8 +386,8 @@ p1 + p2
 
 ```
 
-Below, we plot the distribution of regulatory elements by distal, promoter,
-intronic and exonic regions in each cluster.
+Below, we plot the distribution of regulatory elements by distal,
+promoter, intronic and exonic regions in each cluster.
 
 ```{r}
 
@@ -454,8 +469,8 @@ rownames(matrix) <- gene_matrix@elementMetadata$name
 
 ```
 
-Finally, we build the SeuratObjects with `build_atlas_seurat_object()` from
-utils.R
+Finally, we build the SeuratObjects with `build_atlas_seurat_object()`
+from utils.R
 
 ```{r}
 
@@ -475,13 +490,15 @@ for (i in seq_along(run_ids)) {
 
 ### Spatial cluster plots
 
-With the SeuratObjects, we can generate a spatial map of the mouse hippocampus
-showing the categorization of each tissue region into distinct clusters, which
-loosely show the distribution of putative cell types across the tissue.
+With the SeuratObjects, we can generate a spatial map of the mouse
+hippocampus showing the categorization of each tissue region into
+distinct clusters, which loosely show the distribution of putative cell
+types across the tissue.
 
-Below, we plot the clusters identities of each tixel overlaid on top of the
-tissue image with `spatial_plot()` from utils.R; this function calls the Seurat
-function [SpatialDimPlot](https://satijalab.org/seurat/reference/spatialplot).
+Below, we plot the clusters identities of each tixel overlaid on top of
+the tissue image with `spatial_plot()` from utils.R; this function calls
+the Seurat function
+[SpatialDimPlot](https://satijalab.org/seurat/reference/spatialplot).
 
 ```{r}
 
@@ -528,14 +545,16 @@ ggarrange(plotlist = spatial_qc_plots, ncol = 3, nrow = 1, legend = "right")
 
 ### Spatial genes plots
 
-Similar to gene expression levels in a transcriptomic assay, ArchR uses gene
-activity scores that incorporate accessibility of both the gene body and distal
-regulatory elements are used to rank genes by epigenetic activity.
-Combined with spatial information, these scores can be used to visualize the
-regulatory landscape of a gene of interest in the original tissue context.
+Similar to gene expression levels in a transcriptomic assay, ArchR uses
+gene activity scores that incorporate accessibility of both the gene
+body and distal regulatory elements are used to rank genes by epigenetic
+activity. Combined with spatial information, these scores can be used to
+visualize the regulatory landscape of a gene of interest in the original
+tissue context.
 
-Here, we create a spatial heatmap of the gene activity score for Opalin, a marker
-gene for oligodendrocyte cells, across three spatial H3K27ac CUT&Tag replicates.
+Here, we create a spatial heatmap of the gene activity score for Opalin,
+a marker gene for oligodendrocyte cells, across three spatial H3K27ac
+CUT&Tag replicates.
 
 ```{r}
 
@@ -555,9 +574,9 @@ ggarrange(plotlist = spatial_gene_plots, ncol = 3, nrow = 1, legend = "right")
 
 ### Identify marker genes
 
-Identifying statistically significant gene activity between clusters of distinct
-epigenetic signatures can provide a new understanding of the biological mechanisms
-underlying tissue morphology.
+Identifying statistically significant gene activity between clusters of
+distinct epigenetic signatures can provide a new understanding of the
+biological mechanisms underlying tissue morphology.
 
 Below, we extract [gene
 scores](https://www.archrproject.com/bookdown/gene-scores-and-marker-genes-with-archr.html)
@@ -583,9 +602,9 @@ write.csv(markerList, file = "markerList.csv", row.names = FALSE)
 
 ### Marker gene heatmaps
 
-A clustered heat map of spatially differentiated gene activity scores can be
-used to identify putative cell types.  Below, we plot a heatmap of all marker
-genes by cluster can be plotted with plotMarkerHeatmap().
+A clustered heat map of spatially differentiated gene activity scores
+can be used to identify putative cell types. Below, we plot a heatmap of
+all marker genes by cluster can be plotted with plotMarkerHeatmap().
 
 ```{r}
 
@@ -665,10 +684,10 @@ plotPDF(
 
 `grid` can be used to plot specific genes from the list.
 
-Below, we plot the browser track visualizing potential regulatory elements around
-the Olig1 gene (a marker for oligodendrocytes). In spatial ATAC-seq, peaks
-represent open chromatin; in spatial CUT&Tag, peaks represent genome regions with
-a specific histone modification.
+Below, we plot the browser track visualizing potential regulatory
+elements around the Olig1 gene (a marker for oligodendrocytes). In
+spatial ATAC-seq, peaks represent open chromatin; in spatial CUT&Tag,
+peaks represent genome regions with a specific histone modification.
 
 ```{r}
 
@@ -837,16 +856,19 @@ proj <- addMotifAnnotations(
 Compute per-cell deviations across all of our motif annotations using
 the `addDeviationsMatrix()` function.
 
-WARNING: `addDeviationsMatrix` may error out with traceback pointing to missing 
-variable in the `Matrix` or `irlba` packages.  To handle these bugs, you can
-uninstall `Matrix` and `irlba` and then re-install from source.
-```
+> WARNING: `addDeviationsMatrix` may error out with traceback pointing to
+> missing variable in the `Matrix` or `irlba` packages. To handle these
+> bugs, you can uninstall `Matrix` and `irlba` and then re-install from
+> source.
+
+```         
 renv::purge("Matrix")
 renv::purge("irlba")
 renv::install("Matrix@1.6-1", type = "source")
 renv::install("irlba", type = "source")
 ```
-Once the package are re-installed, you must restart your R session.
+
+> Once the package are re-installed, you must restart your R session.
 
 ```{r}
 
@@ -913,14 +935,14 @@ saveArchRProject(
 
 ## Approximate cell typing
 
-Cell types, along with their location in tissue, can then be identified by
-associating these the tissue with well-characterized marker gene(s).
+Cell types, along with their location in tissue, can then be identified
+by associating these the tissue with well-characterized marker gene(s).
 
 Here, we utilize the Seurat function
 [`addModuleScore`](https://satijalab.org/seurat/reference/addmodulescore)
-to plot the combined expression of marker genes over tissue.  We plot the
-oligodendrocyte module score based on a combination of associated marker genes
-(Mbp, Opalin, Mog, Mobp, Cspg4, Cldn11).
+to plot the combined expression of marker genes over tissue. We plot the
+oligodendrocyte module score based on a combination of associated marker
+genes (Mbp, Opalin, Mog, Mobp, Cspg4, Cldn11).
 
 Marker genes:
 
