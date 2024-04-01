@@ -300,13 +300,13 @@ reduction technique (ie. UMAP, t-SNE).
 > bugs, you can uninstall `Matrix` and `irlba` and then re-install from
 > source.
 
- ```         
- renv::purge("Matrix")
- renv::purge("irlba")
- renv::install("Matrix@1.6-1", type = "source")
- renv::install("irlba", type = "source")
- ```
- 
+```         
+renv::purge("Matrix")
+renv::purge("irlba")
+renv::install("Matrix@1.6-1", type = "source")
+renv::install("irlba", type = "source")
+```
+
 > Once the package are re-installed, you must restart your R session.
 
 ```{r message=FALSE}
@@ -741,7 +741,7 @@ proj <- addGroupCoverages(
 )
 
 # Set to local macs2 installation
-pathToMacs2 <- "/opt/mamba/envs/jupyterlab/bin/macs2"
+pathToMacs2 <- "/Users/jamesm/latch/env/bin/macs2"
 
 proj <- addReproduciblePeakSet(
   ArchRProj = proj,
@@ -751,7 +751,7 @@ proj <- addReproduciblePeakSet(
 
 ```
 
-### Plot peak distribution amoung clusters
+### Plot peak distribution among clusters
 
 ```{r}
 
@@ -811,6 +811,10 @@ write.csv(
 
 Create a heatmap of differentially regulated peaks.
 
+> If your heatmap contains over 16,000 rows, you might need to change
+> the parameters of ComplexHeatmap (see
+> <https://github.com/jokergoo/EnrichedHeatmap/issues/58>).
+
 ```{r}
 
 heatmap_peaks <- plotMarkerHeatmap(
@@ -856,10 +860,10 @@ proj <- addMotifAnnotations(
 Compute per-cell deviations across all of our motif annotations using
 the `addDeviationsMatrix()` function.
 
-> WARNING: `addDeviationsMatrix` may error out with traceback pointing to
-> missing variable in the `Matrix` or `irlba` packages. To handle these
-> bugs, you can uninstall `Matrix` and `irlba` and then re-install from
-> source.
+> WARNING: `addDeviationsMatrix` may error out with traceback pointing
+> to missing variable in the `Matrix` or `irlba` packages. To handle
+> these bugs, you can uninstall `Matrix` and `irlba` and then re-install
+> from source.
 
 ```         
 renv::purge("Matrix")

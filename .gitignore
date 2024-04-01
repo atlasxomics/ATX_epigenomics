@@ -24,6 +24,7 @@ analysis/.RDataTmp
 analysis/complete.RData
 analysis/*.csv
 analysis/CnT_tutorial.html
+analysis/old
 
 # python stuff
 __pycache__/
