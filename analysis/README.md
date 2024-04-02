@@ -3,7 +3,7 @@
  
 This directory contains an R Markdown [tutorial](epigenomics_tutorial.Rmd) describing common tasks performed 
 in the analysis of spatial epigenomic data generated via DBiT-seq.  This analysis relies heavily on the R packages
-[ArchR](https://www.archrproject.com/) and [Seurat](https://satijalab.org/seurat/articles/install_v5#install-seurat-v4); 
+[ArchR](https://www.archrproject.com/) and [Seurat](https://satijalab.org/seurat/articles/install_v5); 
 we recommend reading their vignettes as a companion to our tutorial. 
 
 This tutorial assumes you have created fragments files from an epigenomic alignment and preprocessing pipeline (i.e. 
@@ -44,8 +44,8 @@ have the example data downloaded into this directory, as specified in the figure
 This tutorial was written with the specific versions of the following packages:
 * [ArchR v1.0.2](https://www.archrproject.com/)
     > ArchR is designed to run on UNIX-based platforms (Linux, Mac); it is not supported for Windows.
-* [Seurat v4.3.0](https://satijalab.org/seurat/articles/install_v5#install-seurat-v4)
-* [SeuratObject v4.1.1](https://github.com/satijalab/seurat-object/releases/tag/v4.1.3)
+* [Seurat v5.0.3](https://cran.r-project.org/web/packages/Seurat/index.html)
+* [SeuratObject v5.0.1](https://cran.r-project.org/web/packages/SeuratObject/index.html)
 * [macs2 v2.2.6](https://pypi.org/project/MACS2/2.2.6/)
     * We have found peak calling requires this specific version of macs2, which relies on numpy v1.26.2.  You
     can install them with,
@@ -55,8 +55,6 @@ This tutorial was written with the specific versions of the following packages:
       ``` 
 Regrettably, we have found these packages are susceptible to compatibility issues.  To facilitate code
 reproducability, we created an [renv](https://rstudio.github.io/renv/articles/renv.html) for this tutorial. 
-> Since this tutorial was written, SeuratV5 has been released.  This version is incompatible with the code in this 
-> tutorial.  We are working on an updated tutorial for SeuratV5. 
 
 ### Instructions for renv 
 1. Clone this repository, open RStudio, and set your working directory to `ATX_epigenomics 
