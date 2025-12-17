@@ -19,6 +19,10 @@ The fastq2frags pipeline requires the barcoding schema described in [Zhang et al
 ## setting up the environment
 The ‘fastq2frags' pipeline can be run in an AWS EC2 instance or other cloud computing resource.  We developed the pipeline in an EC2 instance running Red Hat Enterprise Linux 9 (RHEL 9) with 32 cores and 64GB of RAM (ami-08e637cea2f053dfa).  The pipeline requires at least 1 TB free of free disk space.  See below for instructions for setting up an environment for fastq2frags in RHEL 9.
 
+**relevant package versions**
+- Chromap: li_dev4
+- BBMap: BBMap_39.01
+
 > For an example of running the pipeline in a high-performance cluster (HPC) see [here](https://github.com/di-0579/Spatial_epigenome-transcriptome_co-sequencing/tree/main/Data_preprocessing/Spatial-ATAC-seq).
 
 1. Install `git` and set up ssh [access](https://www.theodinproject.com/lessons/foundations-setting-up-git).
