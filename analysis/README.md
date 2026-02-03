@@ -58,15 +58,16 @@ reproducability, we created an [renv](https://rstudio.github.io/renv/articles/re
 
 ### Instructions for renv 
 1. Clone this repository, open RStudio, and set your working directory to `ATX_epigenomics 
-/analysis/`.  
-2. Install `renv`. 
+/analysis/`.
+ > WARNING: do not run renv::snapshot() in this repository immediately after installing renv!  We have found this will overwrite the renv.lock file with your default R environment.  If this does occur, you can checkout/copy the renv.lock file from this repository.
+3. Install `renv`. 
    ```
    install.packages('renv')
    ```
-3. Activate `renv`. 
+4. Activate `renv`. 
    ``` 
    renv::activate() 
-   ``` 
+   ```
 5. Initiate setting up the project R environment; select 'Y' to proceed with install and downloading the R packages 
    into tutorial project. 
    ``` 
