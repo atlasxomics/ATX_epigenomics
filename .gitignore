@@ -13,6 +13,7 @@ analysis/spatials/
 analysis/fragments/
 
 # ArchR outputs
+renv.tar.gz
 analysis/ArchRLogs
 analysis/*.arrow
 analysis/tmp
@@ -47,3 +48,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Misc
+**/*.png
+AGENTS.md

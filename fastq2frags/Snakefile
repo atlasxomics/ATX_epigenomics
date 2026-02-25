@@ -9,14 +9,25 @@ FASTQ_DIR = 'fastqs'
 BARCODE_FILE = 'bc50.txt.gz'
 CORES = 32
 
+
+def get_fastq_or_error(sample, read):
+  matches = glob.glob(f'{FASTQ_DIR}/{sample}/*{read}*fastq.gz')
+  if not matches:
+    raise ValueError(
+      f"No FASTQ file found for sample '{sample}' with read '{read}' in "
+      f"'{FASTQ_DIR}/{sample}'. Check that the FASTQ filenames match the folder "
+      f"name ('{sample}') and include the read label (R1/R2)."
+    )
+  return matches[0]
+
 rule all:
   input:
     expand('{sample}_fragments.tsv.gz', sample=os.listdir(FASTQ_DIR))
 
 rule filter_L1:
   input:
-    in1 = lambda wildcards: glob.glob(f'{FASTQ_DIR}/{wildcards.sample}/*R1*fastq.gz')[0],
-    in2 = lambda wildcards: glob.glob(f'{FASTQ_DIR}/{wildcards.sample}/*R2*fastq.gz')[0]
+    in1 = lambda wildcards: get_fastq_or_error(wildcards.sample, 'R1'),
+    in2 = lambda wildcards: get_fastq_or_error(wildcards.sample, 'R2')
   output:
     out1 = '{sample}_linker1_R1.fastq.gz',
     out2 = '{sample}_linker1_R2.fastq.gz'
