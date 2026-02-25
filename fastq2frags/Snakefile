@@ -22,17 +22,18 @@ def get_fastq_or_error(sample, read):
 
 rule all:
   input:
-    expand('{sample}_fragments.tsv.gz', sample=os.listdir(FASTQ_DIR))
+    expand('outputs/{sample}/{sample}_fragments.tsv.gz', sample=os.listdir(FASTQ_DIR))
 
 rule filter_L1:
   input:
     in1 = lambda wildcards: get_fastq_or_error(wildcards.sample, 'R1'),
     in2 = lambda wildcards: get_fastq_or_error(wildcards.sample, 'R2')
   output:
-    out1 = '{sample}_linker1_R1.fastq.gz',
-    out2 = '{sample}_linker1_R2.fastq.gz'
+    out1 = 'outputs/{sample}/{sample}_linker1_R1.fastq.gz',
+    out2 = 'outputs/{sample}/{sample}_linker1_R2.fastq.gz'
   shell:
     '''
+    mkdir -p outputs/{wildcards.sample}
     bbmap/bbduk.sh \
     in1={input.in1} \
     in2={input.in2} \
@@ -44,20 +45,21 @@ rule filter_L1:
     restrictleft=103 \
     skipr1=t \
     hdist=3 \
-    stats={wildcards.sample}_stats.linker1.txt \
+    stats=outputs/{wildcards.sample}/{wildcards.sample}_stats.linker1.txt \
     threads={CORES} \
     literal=GTGGCCGATGTTTCGCATCGGCGTACGACT
     '''
 
 rule filter_L2:
   input:
-    in1 = '{sample}_linker1_R1.fastq.gz',
-    in2 = '{sample}_linker1_R2.fastq.gz'
+    in1 = 'outputs/{sample}/{sample}_linker1_R1.fastq.gz',
+    in2 = 'outputs/{sample}/{sample}_linker1_R2.fastq.gz'
   output:
-    out1 = '{sample}_linker2_R1.fastq.gz',
-    out2 = '{sample}_linker2_R2.fastq.gz'
+    out1 = 'outputs/{sample}/{sample}_linker2_R1.fastq.gz',
+    out2 = 'outputs/{sample}/{sample}_linker2_R2.fastq.gz'
   shell:
     '''
+    mkdir -p outputs/{wildcards.sample}
     bbmap/bbduk.sh \
     in1={input.in1} \
     in2={input.in2} \
@@ -69,22 +71,23 @@ rule filter_L2:
     restrictleft=65 \
     skipr1=t \
     hdist=3 \
-    stats={wildcards.sample}_stats.linker2.txt \
+    stats=outputs/{wildcards.sample}/{wildcards.sample}_stats.linker2.txt \
     threads={CORES} \
     literal=ATCCACGTGCTTGAGAGGCCAGAGCATTCG
     '''
 
 rule chromap:
   input:
-    in1 = '{sample}_linker2_R1.fastq.gz',
-    in2 = '{sample}_linker2_R2.fastq.gz'
+    in1 = 'outputs/{sample}/{sample}_linker2_R1.fastq.gz',
+    in2 = 'outputs/{sample}/{sample}_linker2_R2.fastq.gz'
   output:
-    '{sample}_aln.bed'
+    'outputs/{sample}/{sample}_aln.bed'
   params:
     ref_dir = REF_DIR,
     barcodes = BARCODE_FILE
   shell:
     '''
+    mkdir -p outputs/{wildcards.sample}
     chromap/chromap \
       -t {CORES} \
       --preset atac \
@@ -92,7 +95,7 @@ rule chromap:
       -r {params.ref_dir}/GRCh38_genome.fa \
       -1 {input.in1} \
       -2 {input.in2} \
-      -o {wildcards.sample}_aln.bed \
+      -o {output} \
       -b {input.in2} \
       --barcode-whitelist {params.barcodes} \
       --read-format bc:22:29,bc:60:67,r1:0:-1,r2:117:-1
@@ -100,12 +103,13 @@ rule chromap:
 
 rule bed2fragment:
   input:
-    '{sample}_aln.bed'
+    'outputs/{sample}/{sample}_aln.bed'
   output:
-    '{sample}_fragments.tsv.gz'
+    'outputs/{sample}/{sample}_fragments.tsv.gz'
   shell:
     '''	
-    awk 'BEGIN{{FS=OFS=" "}}{{$4=$4"-1"}}4' {input} > {wildcards.sample}_temp.bed
-    sed 's/ /\t/g' {wildcards.sample}_temp.bed > {wildcards.sample}_fragments.tsv
-    bgzip -c {wildcards.sample}_fragments.tsv > {output}
+    mkdir -p outputs/{wildcards.sample}
+    awk 'BEGIN{{FS=OFS=" "}}{{$4=$4"-1"}}4' {input} > outputs/{wildcards.sample}/{wildcards.sample}_temp.bed
+    sed 's/ /\t/g' outputs/{wildcards.sample}/{wildcards.sample}_temp.bed > outputs/{wildcards.sample}/{wildcards.sample}_fragments.tsv
+    bgzip -c outputs/{wildcards.sample}/{wildcards.sample}_fragments.tsv > {output}
     '''
