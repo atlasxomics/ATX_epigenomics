@@ -1,9 +1,5 @@
 ## workflow
 
-<div>
-    <img src="../static/snakemake_dag.png" alt="dag" width="400"/>
-</div>
-
 The fastq2frags pipeline requires the barcoding schema described in [Zhang et al. 2023](https://www.nature.com/articles/s41586-023-05795-1#MOESM1) for Illumina short-read sequencing:
 - read1: genomic sequence
 - read2: linker1 | barcodeA | linker2 | barcodeB | genomic sequence
@@ -15,6 +11,10 @@ The fastq2frags pipeline requires the barcoding schema described in [Zhang et al
 2. Perform sequence alignment with [Chromap](https://github.com/haowenz/chromap).
 
 3. Convert the output file from the [BED format](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) to a fragments.tsv.gz file.
+
+<div style="margin-left: 15%;">
+    <img src="../static/snakemake_dag.png" alt="dag" width="150"/>
+</div>
     
 ## setting up the environment
 The `fastq2frags` pipeline can be run locally or in an AWS EC2 instance or other cloud computing resource. We developed the pipeline in an EC2 instance running Red Hat Enterprise Linux 9 (RHEL 9) with 32 cores and 64GB of RAM (ami-08e637cea2f053dfa). We recommend at least 1 TB free of disk space for full experiments, but less can be used for testing. See below for instructions on setting up an environment for fastq2frags in RHEL 9.
@@ -182,4 +182,4 @@ fastq2frags/
     ```
 
 ## support
-Questions? Comments?  Contact support@atlasxomics.com or post in the AtlasXomics [Discord](https://discord.com/channels/1004748539827597413/1005222888384770108).
+Questions? Comments?  Contact support@atlasxomics.com.
