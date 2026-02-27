@@ -12,8 +12,8 @@ The fastq2frags pipeline requires the barcoding schema described in [Zhang et al
 
 3. Convert the output file from the [BED format](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) to a fragments.tsv.gz file.
 
-<div style="margin-left: 15%;">
-    <img src="../static/snakemake_dag.png" alt="dag" width="150"/>
+<div align="center">
+    <img src="../static/snakemake_dag.png" alt="dag" width="175"/>
 </div>
     
 ## setting up the environment
