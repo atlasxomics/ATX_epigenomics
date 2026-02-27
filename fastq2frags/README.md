@@ -152,6 +152,7 @@ fastq2frags/
 * Check that `REF_DIR` points to the correct reference genome directory, containing a reference fasta (.fa or .fasta) and index (.index) file.
 * Check that `BARCODE_FILE` points to the correct .txt.gz barcode 'whitelist' file.  Use bc50.txt.gz or bc96.txt.gz for 50-channel and 96-channel chips, respectively.
 * Check that `CORES` contains the correct number of available cores for the pipeline.  Here, we set the value to 32.
+* Check that `BBDUK_XMX` sets a suitable Java heap size for bbduk (for example, `BBDUK_XMX = '24g'`).
 
 3. Activate the snakemake environment and run the workflow. The parameter `-c` can be set to a specified number of cores (e.g., 8); see snakemake [docs](https://snakemake.readthedocs.io/en/stable/executing/cli.html#command-line-interface).
     ```

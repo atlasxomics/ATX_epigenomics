@@ -8,6 +8,7 @@ REF_DIR = 'Refdata_scATAC_MAESTRO_GRCh38_1.1.0'
 FASTQ_DIR = 'fastqs'
 BARCODE_FILE = 'bc50.txt.gz'
 CORES = 32
+BBDUK_XMX = '24g'
 
 
 def get_fastq_or_error(sample, read):
@@ -35,6 +36,7 @@ rule filter_L1:
     '''
     mkdir -p outputs/{wildcards.sample}
     bbmap/bbduk.sh \
+    -Xmx{BBDUK_XMX} \
     in1={input.in1} \
     in2={input.in2} \
     outm1={output.out1} \
@@ -61,6 +63,7 @@ rule filter_L2:
     '''
     mkdir -p outputs/{wildcards.sample}
     bbmap/bbduk.sh \
+    -Xmx{BBDUK_XMX} \
     in1={input.in1} \
     in2={input.in2} \
     outm1={output.out1} \
