@@ -140,12 +140,7 @@ fastq2frags/
 ## running the pipeline
 1. Upload FASTQ files into the `fastqs` directory in a subdirectory named with the sample name:
    `fastq2frags/fastqs/SAMPLENAME/[SAMPLENAME_R1.fastq.gz, SAMPLENAME_R2.fastq.gz]`
-
-- AtlasXomics delivers fastq files via [latch.bio](https://latch.bio/); to facilitate transferring data from latch, you may want to install **latch cli**.
-    ```
-    python3 -m pip install latch
-    ```
-  Instructions for copying data from latch can be found [here](https://wiki.latch.bio/wiki/data/data-command-line).
+> AtlasXomics delivers fastq files via [latch.bio](https://latch.bio/); to facilitate transferring data from latch, you may want to install **latch cli**. Instructions for copying data from latch can be found [here](https://wiki.latch.bio/wiki/data/data-command-line).
 
 2. Ensure the global variables in the Snakefile have the correct values.
 * Check that `FASTQ_DIR` points to the top directory containing fastqs, with subdirectories for each sample containing R1 and R2 fastq.gz files.
