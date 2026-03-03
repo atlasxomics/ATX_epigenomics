@@ -182,5 +182,50 @@ fastq2frags/
             └── SAMPLENAME_fragments.tsv.gz
     ```
 
+## tutorial data
+To enable testing of the pipeline, we provide three datasets from the same DBiT-seq spatial epigenomics experiment (healthy human stomach tissue section), each with different levels of subsampling.
+
+| dataset | reads | approximate FASTQ size | recommended use |
+| --- | --- | --- | --- |
+| `test_dataset_50m` | 50 million | <500 MB per FASTQ | Environment and workflow smoke test |
+| `example_dataset_250m` | 250 million | ~15 GB per | Smallest dataset suitable for downstream analysis |
+| `full_dataset_1b` | 1.45 billion | ~90 GB per | Full-scale benchmarking; not recommended for routine testing |
+
+Approximate runtime guidance (from our reference EC2 setup: 32 cores / 64GB RAM):
+- `test_dataset_50m`: minutes
+- `example_dataset_250m`: about 1 to 2 hours
+
+Download options:
+- `test_dataset_50m`
+  - GUI: https://console.latch.bio/s/17113804293644009
+  - URL: https://latch-public.s3.amazonaws.com/test-data/13502/fastq2frags_examples/test_dataset_50m.tar.gz
+- `example_dataset_250m`
+  - GUI: https://console.latch.bio/s/17113812659572243
+  - URL: https://latch-public.s3.amazonaws.com/test-data/13502/fastq2frags_examples/example_dataset_250m.tar.gz
+- `full_dataset_1b`
+  - GUI: https://console.latch.bio/s/17113821939845000
+
+Suggested quick start with tutorial data:
+```bash
+cd ATX_epigenomics/fastq2frags
+mkdir -p fastqs
+
+# Download one dataset tarball (example: 50M)
+wget https://latch-public.s3.amazonaws.com/test-data/13502/fastq2frags_examples/test_dataset_50m.tar.gz
+
+# Extract into fastqs/
+tar -xzvf test_dataset_50m.tar.gz -C fastqs
+```
+
+After extraction, confirm this structure:
+```text
+fastqs/
+└── test_dataset_50m/
+    ├── ...R1...fastq.gz
+    └── ...R2...fastq.gz
+```
+
+The sample folder name is used as the Snakemake sample ID, and FASTQ filenames must include `R1`/`R2`.
+
 ## support
 Questions? Comments?  Contact support@atlasxomics.com.
